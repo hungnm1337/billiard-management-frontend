@@ -1,32 +1,62 @@
 <app-header></app-header>
 <div class="max-w-md mx-auto mt-16 bg-white shadow-lg rounded-lg p-8">
   <h2 class="text-2xl font-bold text-center text-green-900 mb-6">Đăng ký tài khoản</h2>
-  <form  (ngSubmit)="register()">
+  <form [formGroup]="registerForm" (ngSubmit)="register()">
+    <!-- Họ tên -->
+    <div class="mb-4">
+      <label class="block mb-1 font-medium" for="name">Họ tên</label>
+      <input
+        type="text"
+        id="name"
+        formControlName="name"
+        class="w-full border rounded px-3 py-2"
+        required
+      />
+      <div *ngIf="submitted && f.name.invalid" class="text-red-600 text-sm mt-1">
+        Vui lòng nhập họ tên
+      </div>
+    </div>
+    <!-- Tên đăng nhập -->
     <div class="mb-4">
       <label class="block mb-1 font-medium" for="username">Tên đăng nhập</label>
       <input
         type="text"
         id="username"
-        name="username"
+        formControlName="username"
         class="w-full border rounded px-3 py-2"
         required
       />
-      <div *ngIf="submitted && username.invalid" class="text-red-600 text-sm mt-1">
+      <div *ngIf="submitted && f.username.invalid" class="text-red-600 text-sm mt-1">
         Vui lòng nhập tên đăng nhập
       </div>
     </div>
+    <!-- Mật khẩu -->
     <div class="mb-4">
       <label class="block mb-1 font-medium" for="password">Mật khẩu</label>
       <input
         type="password"
         id="password"
-        name="password"
+        formControlName="password"
         class="w-full border rounded px-3 py-2"
         required
         minlength="6"
       />
-      <div *ngIf="submitted && password.invalid" class="text-red-600 text-sm mt-1">
+      <div *ngIf="submitted && f.password.invalid" class="text-red-600 text-sm mt-1">
         Mật khẩu phải có ít nhất 6 ký tự
+      </div>
+    </div>
+    <!-- Ngày sinh -->
+    <div class="mb-4">
+      <label class="block mb-1 font-medium" for="dob">Ngày sinh</label>
+      <input
+        type="date"
+        id="dob"
+        formControlName="dob"
+        class="w-full border rounded px-3 py-2"
+        required
+      />
+      <div *ngIf="submitted && f.dob.invalid" class="text-red-600 text-sm mt-1">
+        Vui lòng chọn ngày sinh
       </div>
     </div>
     <button
@@ -37,4 +67,3 @@
     </button>
   </form>
 </div>
-
