@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đặt bàn billiard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .table-available {
+            background-color: #4ade80;
+            color: white;
+        }
+        .table-occupied {
+            background-color: #f87171;
+            color: white;
+        }
+        .table-reserved {
+            background-color: #fbbf24;
+            color: white;
+        }
+        .table-selected {
+            background-color: #3b82f6;
+            color: white;
+            transform: scale(1.05);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .blink {
+            animation: blink 1s infinite;
+        }
+        @keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        .modal {
+            transition: opacity 0.3s ease;
+        }
+        .time-slot {
+            transition: all 0.2s ease;
+        }
+        .time-slot:hover {
+            transform: scale(1.05);
+        }
+        .time-slot.selected {
+            background-color: #3b82f6;
+            color: white;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <header class="mb-8">
+            <h1 class="text-3xl font-bold text-center text-blue-800 mb-2">ĐẶT BÀN BILLIARD</h1>
+            <div class="flex justify-between items-center bg-white p-4 rounded-lg shadow">
+                <div class="flex items-center space-x-4">
+                    <div class="bg-blue-100 p-2 rounded-full">
+                        <i class="fas fa-user text-blue-600 text-xl"></i>
+                    </div>
+                    <div>
+                        <p class="font-semibold">Xin chào, Khách hàng</p>
+                        <p class="text-sm text-gray-500">Hôm nay: <span id="current-date"></span></p>
+                    </div>
+                </div>
+                <div class="flex space-x-2">
+                    <button id="view-cart-btn" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center relative">
+                        <i class="fas fa-shopping-cart mr-2"></i> Giỏ đặt bàn
+                        <span id="cart-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center hidden">0</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Booking Steps -->
+        <div class="bg-white p-4 rounded-lg shadow mb-8">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="flex items-center mb-4 md:mb-0">
+                    <div class="bg-blue-500 text-white rounded-full h-8 w-8 flex items-center justify-center mr-2">1</div>
+                    <span class="font-medium">Chọn bàn</span>
+                </div>
+                <div class="flex items-center mb-4 md:mb-0">
+                    <div class="bg-gray-200 rounded-full h-8 w-8 flex items-center justify-center mr-2">2</div>
+                    <span class="text-gray-500">Chọn thời gian</span>
+                </div>
+                <div class="flex items-center">
+                    <div class="bg-gray-200 rounded-full h-8 w-8 flex items-center justify-center mr-2">3</div>
+                    <span class="text-gray-500">Xác nhận</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search and Filter -->
+        <div class="bg-white p-4 rounded-lg shadow mb-8">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div class="relative flex-1">
+                    <input type="text" placeholder="Tìm kiếm bàn..." class="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                </div>
+                <div class="flex space-x-2">
+                    <select id="table-type-filter" class="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="all">Tất cả loại bàn</option>
+                        <option value="standard">Bàn thường</option>
+                        <option value="vip">Bàn VIP</option>
+                        <option value="tournament">Bàn tournament</option>
+                    </select>
+                    <select id="price-filter" class="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="all">Tất cả giá</option>
+                        <option value="100000">Dưới 100k/giờ</option>
+                        <option value="150000">100k-150k/giờ</option>
+                        <option value="200000">Trên 150k/giờ</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tables Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6" id="tables-container">
+            <!-- Table cards will be generated by JavaScript -->
+        </div>
+
+        <!-- Time Selection (hidden by default) -->
+        <div id="time-selection" class="bg-white p-6 rounded-lg shadow mt-8 hidden">
+            <h2 class="text-xl font-semibold mb-6">Chọn thời gian chơi</h2>
+
+            <div class="mb-6">
+                <h3 class="text-lg font-medium mb-3">Ngày chơi</h3>
+                <div class="flex space-x-3 overflow-x-auto pb-2">
+                    <div class="date-option flex-shrink-0 border rounded-lg p-3 text-center cursor-pointer hover:bg-gray-50">
+                        <div class="font-medium">Hôm nay</div>
+                        <div class="text-sm text-gray-500" id="today-date"></div>
+                    </div>
+                    <div class="date-option flex-shrink-0 border rounded-lg p-3 text-center cursor-pointer hover:bg-gray-50">
+                        <div class="font-medium">Ngày mai</div>
+                        <div class="text-sm text-gray-500" id="tomorrow-date"></div>
+                    </div>
+                    <div class="date-option flex-shrink-0 border rounded-lg p-3 text-center cursor-pointer hover:bg-gray-50">
+                        <div class="font-medium">Thứ 7</div>
+                        <div class="text-sm text-gray-500" id="saturday-date"></div>
+                    </div>
+                    <div class="date-option flex-shrink-0 border rounded-lg p-3 text-center cursor-pointer hover:bg-gray-50">
+                        <div class="font-medium">Chủ nhật</div>
+                        <div class="text-sm text-gray-500" id="sunday-date"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <h3 class="text-lg font-medium mb-3">Khung giờ</h3>
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                    <div class="time-slot border rounded-lg p-3 text-center cursor-pointer hover:bg-gray-50">
+                        <div>08:00 - 10:00</div>
+                        <div class="text-sm text-gray-500">150k/giờ</div>
+                    </div>
+                    <div class="time-slot border rounded-lg p-3 text-center cursor-pointer hover:bg-gray-50">
+                        <div>10:00 - 12:00</div>
+                        <div class="text-sm text-gray-500">150k/giờ</div>
+                    </div>
+                    <div class="time-slot border rounded-lg p-3 text-center cursor-pointer hover:bg-gray-50">
+                        <div>12:00 - 14:00</div>
+                        <div class="text-sm text-gray-500">120k/giờ</div>
+                    </div>
+                    <div class="time-slot border rounded-lg p-3 text-center cursor-pointer hover:bg-gray-50">
+                        <div>14:00 - 16:00</div>
+                        <div class="text-sm text-gray-500">120k/giờ</div>
+                    </div>
+                    <div class="time-slot border rounded-lg p-3 text-center cursor-pointer hover:bg-gray-50">
+                        <div>16:00 - 18:00</div>
+                        <div class="text-sm text-gray-500">150k/giờ</div>
+                    </div>
+                    <div class="time-slot border rounded-lg p-3 text-center cursor-pointer hover:bg-gray-50">
+                        <div>18:00 - 20:00</div>
+                        <div class="text-sm text-gray-500">180k/giờ</div>
+                    </div>
+                    <div class="time-slot border rounded-lg p-3 text-center cursor-pointer hover:bg-gray-50">
+                        <div>20:00 - 22:00</div>
+                        <div class="text-sm text-gray-500">180k/giờ</div>
+                    </div>
+                    <div class="time-slot border rounded-lg p-3 text-center cursor-pointer hover:bg-gray-50">
+                        <div>22:00 - 24:00</div>
+                        <div class="text-sm text-gray-500">150k/giờ</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center mt-6">
+                <button id="back-to-tables" class="text-blue-500 hover:text-blue-700 flex items-center">
+                    <i class="fas fa-arrow-left mr-2"></i> Quay lại chọn bàn
+                </button>
+                <button id="confirm-booking" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg">
+                    Tiếp tục <i class="fas fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Booking Summary (hidden by default) -->
+        <div id="booking-summary" class="bg-white p-6 rounded-lg shadow mt-8 hidden">
+            <h2 class="text-xl font-semibold mb-6">Xác nhận đặt bàn</h2>
+
+            <div class="mb-6">
+                <h3 class="text-lg font-medium mb-3">Thông tin đặt bàn</h3>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <div class="flex justify-between mb-2">
+                        <span class="text-gray-600">Bàn:</span>
+                        <span class="font-medium" id="summary-table-name"></span>
+                    </div>
+                    <div class="flex justify-between mb-2">
+                        <span class="text-gray-600">Loại bàn:</span>
+                        <span class="font-medium" id="summary-table-type"></span>
+                    </div>
+                    <div class="flex justify-between mb-2">
+                        <span class="text-gray-600">Ngày chơi:</span>
+                        <span class="font-medium" id="summary-booking-date"></span>
+                    </div>
+                    <div class="flex justify-between mb-2">
+                        <span class="text-gray-600">Khung giờ:</span>
+                        <span class="font-medium" id="summary-time-slot"></span>
+                    </div>
+                    <div class="flex justify-between mb-2">
+                        <span class="text-gray-600">Giá:</span>
+                        <span class="font-medium" id="summary-price"></span>
+                    </div>
+                    <div class="flex justify-between mt-4 pt-4 border-t">
+                        <span class="text-gray-600 font-semibold">Tổng cộng:</span>
+                        <span class="font-bold text-lg text-blue-600" id="summary-total"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <h3 class="text-lg font-medium mb-3">Thông tin khách hàng</h3>
+                <form id="customer-info-form">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-gray-700 mb-1">Họ và tên*</label>
+                            <input type="text" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 mb-1">Số điện thoại*</label>
+                            <input type="tel" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 mb-1">Email</label>
+                            <input type="email" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 mb-1">Ghi chú</label>
+                            <input type="text" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Yêu cầu đặc biệt...">
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="flex justify-between items-center mt-6">
+                <button id="back-to-time" class="text-blue-500 hover:text-blue-700 flex items-center">
+                    <i class="fas fa-arrow-left mr-2"></i> Quay lại chọn giờ
+                </button>
+                <button id="complete-booking" class="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg">
+                    Hoàn tất đặt bàn <i class="fas fa-check ml-2"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cart Modal -->
+    <div id="cart-modal" class="modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md">
+            <div class="flex justify-between items-center border-b p-4">
+                <h3 class="text-xl font-semibold">Giỏ đặt bàn</h3>
+                <button id="close-cart" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="p-6">
+                <div id="cart-items" class="space-y-4">
+                    <!-- Cart items will be added here -->
+                    <div class="text-center text-gray-500 py-8">
+                        <i class="fas fa-shopping-cart text-4xl mb-2"></i>
+                        <p>Chưa có bàn nào trong giỏ</p>
+                    </div>
+                </div>
+                <div class="border-t mt-4 pt-4">
+                    <div class="flex justify-between mb-2">
+                        <span class="text-gray-600">Tổng cộng:</span>
+                        <span class="font-bold" id="cart-total">0 đ</span>
+                    </div>
+                    <button id="checkout-btn" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg mt-4 hidden">
+                        Thanh toán <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="success-modal" class="modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md text-center p-8">
+            <div class="bg-green-100 text-green-600 rounded-full h-16 w-16 flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-check text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-semibold mb-2">Đặt bàn thành công!</h3>
+            <p class="text-gray-600 mb-6">Cảm ơn bạn đã đặt bàn tại quán của chúng tôi.</p>
+            <div class="bg-gray-50 p-4 rounded-lg mb-6">
+                <p class="font-medium">Mã đặt bàn: <span class="text-blue-600">#BILL20230001</span></p>
+                <p class="text-sm text-gray-500">Vui lòng đến đúng giờ để được phục vụ tốt nhất</p>
+            </div>
+            <button id="close-success" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg">
+                Đóng <i class="fas fa-times ml-2"></i>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Sample data for pool tables
+        const tables = [
+            { id: 1, name: "Bàn 1", type: "standard", price: 100000, status: "available", customer: null, startTime: null },
+            { id: 2, name: "Bàn 2", type: "standard", price: 100000, status: "occupied", customer: "Nguyễn Văn A", startTime: new Date(Date.now() - 30*60000) },
+            { id: 3, name: "Bàn 3", type: "vip", price: 150000, status: "reserved", customer: "Trần Thị B", startTime: new Date(Date.now() + 60*60000) },
+            { id: 4, name: "Bàn 4", type: "standard", price: 100000, status: "available", customer: null, startTime: null },
+            { id: 5, name: "Bàn 5", type: "tournament", price: 200000, status: "maintenance", customer: null, startTime: null },
+            { id: 6, name: "Bàn 6", type: "vip", price: 150000, status: "occupied", customer: "Lê Văn C", startTime: new Date(Date.now() - 90*60000) },
+            { id: 7, name: "Bàn 7", type: "standard", price: 100000, status: "available", customer: null, startTime: null },
+            { id: 8, name: "Bàn 8", type: "standard", price: 100000, status: "available", customer: null, startTime: null },
+        ];
+
+        // Booking data
+        let selectedTable = null;
+        let selectedDate = null;
+        let selectedTimeSlot = null;
+        let cartItems = [];
+
+        // DOM elements
+        const tablesContainer = document.getElementById('tables-container');
+        const timeSelection = document.getElementById('time-selection');
+        const bookingSummary = document.getElementById('booking-summary');
+        const viewCartBtn = document.getElementById('view-cart-btn');
+        const cartModal = document.getElementById('cart-modal');
+        const closeCart = document.getElementById('close-cart');
+        const cartItemsContainer = document.getElementById('cart-items');
+        const cartTotal = document.getElementById('cart-total');
+        const checkoutBtn = document.getElementById('checkout-btn');
+        const cartCount = document.getElementById('cart-count');
+        const successModal = document.getElementById('success-modal');
+        const closeSuccess = document.getElementById('close-success');
+        const currentDateElement = document.getElementById('current-date');
+        const todayDateElement = document.getElementById('today-date');
+        const tomorrowDateElement = document.getElementById('tomorrow-date');
+        const saturdayDateElement = document.getElementById('saturday-date');
+        const sundayDateElement = document.getElementById('sunday-date');
+
+        // Current date and time
+        const now = new Date();
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        currentDateElement.textContent = now.toLocaleDateString('vi-VN', options);
+
+        // Set date options
+        const tomorrow = new Date(now);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        let saturday = new Date(now);
+        while (saturday.getDay() !== 6) {
+            saturday.setDate(saturday.getDate() + 1);
+        }
+
+        let sunday = new Date(now);
+        while (sunday.getDay() !== 0) {
+            sunday.setDate(sunday.getDate() + 1);
+        }
+
+        todayDateElement.textContent = now.toLocaleDateString('vi-VN', { day: 'numeric', month: 'numeric' });
+        tomorrowDateElement.textContent = tomorrow.toLocaleDateString('vi-VN', { day: 'numeric', month: 'numeric' });
+        saturdayDateElement.textContent = saturday.toLocaleDateString('vi-VN', { day: 'numeric', month: 'numeric' });
+        sundayDateElement.textContent = sunday.toLocaleDateString('vi-VN', { day: 'numeric', month: 'numeric' });
+
+        // Render tables
+        function renderTables() {
+            tablesContainer.innerHTML = '';
+
+            const tableTypeFilter = document.getElementById('table-type-filter').value;
+            const priceFilter = document.getElementById('price-filter').value;
+
+            tables.forEach(table => {
+                // Apply filters
+                if (tableTypeFilter !== 'all' && table.type !== tableTypeFilter) return;
+                if (priceFilter !== 'all') {
+                    const price = parseInt(priceFilter);
+                    if (price === 100000 && table.price >= 100000) return;
+                    if (price === 150000 && (table.price < 100000 || table.price > 150000)) return;
+                    if (price === 200000 && table.price <= 150000) return;
+                }
+
+                // Skip occupied and maintenance tables
+                if (table.status !== 'available' && table.status !== 'reserved') return;
+
+                const tableElement = document.createElement('div');
+                tableElement.className = 'bg-white rounded-lg shadow overflow-hidden cursor-pointer transform hover:scale-105 transition-transform duration-200';
+                tableElement.dataset.id = table.id;
+
+                let statusClass = '';
+                let statusText = '';
+                let icon = '';
+
+                if (table.status === 'available') {
+                    statusClass = 'table-available';
+                    statusText = 'Trống';
+                    icon = 'fa-circle-check';
+                } else if (table.status === 'reserved') {
+                    statusClass = 'table-reserved';
+                    statusText = 'Đã đặt';
+                    icon = 'fa-calendar';
+                }
+
+                // Check if table is in cart
+                const isInCart = cartItems.some(item => item.tableId === table.id);
+                if (isInCart) {
+                    statusClass = 'table-selected';
+                    statusText = 'Đã chọn';
+                    icon = 'fa-check-circle';
+                }
+
+                tableElement.innerHTML = `
+                    <div class="p-4 ${statusClass}">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-xl font-bold">${table.name}</h3>
+                            <i class="fas ${icon} text-xl"></i>
+                        </div>
+                        <p class="text-sm mt-1">${statusText}</p>
+                    </div>
+                    <div class="p-4">
+                        <div class="flex justify-between mb-2">
+                            <span class="text-gray-500">Loại:</span>
+                            <span class="font-medium">${getTableTypeName(table.type)}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Giá:</span>
+                            <span class="font-medium">${table.price.toLocaleString('vi-VN')} đ/giờ</span>
+                        </div>
+                    </div>
+                `;
+
+                tableElement.addEventListener('click', () => selectTable(table.id));
+                tablesContainer.appendChild(tableElement);
+            });
+
+            updateCartCount();
+        }
+
+        function getTableTypeName(type) {
+            switch(type) {
+                case 'standard': return 'Bàn thường';
+                case 'vip': return 'Bàn VIP';
+                case 'tournament': return 'Bàn tournament';
+                default: return type;
+            }
+        }
+
+        function selectTable(tableId) {
+            const table = tables.find(t => t.id === tableId);
+
+            if (table.status === 'available') {
+                // Toggle selection
+                const index = cartItems.findIndex(item => item.tableId === tableId);
+
+                if (index === -1) {
+                    // Add to cart
+                    cartItems.push({
+                        tableId: table.id,
+                        tableName: table.name,
+                        tableType: table.type,
+                        price: table.price
+                    });
+                } else {
+                    // Remove from cart
+                    cartItems.splice(index, 1);
+                }
+
+                renderTables();
+                updateCartCount();
+            } else if (table.status === 'reserved') {
+                alert('Bàn này đã được đặt trước. Vui lòng chọn bàn khác.');
+            }
+        }
+
+        function updateCartCount() {
+            const count = cartItems.length;
+            cartCount.textContent = count;
+
+            if (count > 0) {
+                cartCount.classList.remove('hidden');
+            } else {
+                cartCount.classList.add('hidden');
+            }
+        }
+
+        function showTimeSelection() {
+            timeSelection.classList.remove('hidden');
+            tablesContainer.classList.add('hidden');
+
+            // Set default selected date to today
+            selectedDate = now;
+            document.querySelector('.date-option').classList.add('bg-blue-50', 'border-blue-300');
+        }
+
+        function showBookingSummary() {
+            bookingSummary.classList.remove('hidden');
+            timeSelection.classList.add('hidden');
+
+            // Update summary info
+            document.getElementById('summary-table-name').textContent = selectedTable.name;
+            document.getElementById('summary-table-type').textContent = getTableTypeName(selectedTable.type);
+            document.getElementById('summary-booking-date').textContent = selectedDate.toLocaleDateString('vi-VN', options);
+            document.getElementById('summary-time-slot').textContent = selectedTimeSlot.textContent;
+
+            // Calculate price (2 hours)
+            const price = parseInt(selectedTimeSlot.dataset.price) * 2;
+            document.getElementById('summary-price').textContent = price.toLocaleString('vi-VN') + ' đ';
+            document.getElementById('summary-total').textContent = price.toLocaleString('vi-VN') + ' đ';
+        }
+
+        function renderCartItems() {
+            if (cartItems.length === 0) {
+                cartItemsContainer.innerHTML = `
+                    <div class="text-center text-gray-500 py-8">
+                        <i class="fas fa-shopping-cart text-4xl mb-2"></i>
+                        <p>Chưa có bàn nào trong giỏ</p>
+                    </div>
+                `;
+                checkoutBtn.classList.add('hidden');
+                cartTotal.textContent = '0 đ';
+                return;
+            }
+
+            cartItemsContainer.innerHTML = '';
+            let total = 0;
+
+            cartItems.forEach((item, index) => {
+                const cartItemElement = document.createElement('div');
+                cartItemElement.className = 'flex justify-between items-center border-b pb-4';
+
+                cartItemElement.innerHTML = `
+                    <div>
+                        <h4 class="font-medium">${item.tableName}</h4>
+                        <p class="text-sm text-gray-500">${getTableTypeName(item.tableType)}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-medium">${item.price.toLocaleString('vi-VN')} đ/giờ</p>
+                        <button class="text-red-500 text-sm remove-item" data-index="${index}">
+                            <i class="fas fa-trash mr-1"></i> Xóa
+                        </button>
+                    </div>
+                `;
+
+                cartItemsContainer.appendChild(cartItemElement);
+                total += item.price;
+            });
+
+            cartTotal.textContent = total.toLocaleString('vi-VN') + ' đ';
+            checkoutBtn.classList.remove('hidden');
+
+            // Add event listeners to remove buttons
+            document.querySelectorAll('.remove-item').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const index = parseInt(e.target.closest('button').dataset.index);
+                    cartItems.splice(index, 1);
+                    renderCartItems();
+                    renderTables();
+                    updateCartCount();
+                });
+            });
+        }
+
+        // Event listeners
+        viewCartBtn.addEventListener('click', () => {
+            renderCartItems();
+            cartModal.classList.remove('hidden');
+        });
+
+        closeCart.addEventListener('click', () => {
+            cartModal.classList.add('hidden');
+        });
+
+        closeSuccess.addEventListener('click', () => {
+            successModal.classList.add('hidden');
+            // Reset booking flow
+            cartItems = [];
+            renderTables();
+            updateCartCount();
+        });
+
+        document.getElementById('table-type-filter').addEventListener('change', renderTables);
+        document.getElementById('price-filter').addEventListener('change', renderTables);
+
+        document.getElementById('back-to-tables').addEventListener('click', () => {
+            timeSelection.classList.add('hidden');
+            tablesContainer.classList.remove('hidden');
+        });
+
+        document.getElementById('back-to-time').addEventListener('click', () => {
+            bookingSummary.classList.add('hidden');
+            timeSelection.classList.remove('hidden');
+        });
+
+        document.getElementById('confirm-booking').addEventListener('click', () => {
+            // In a real app, you would validate selection first
+            showBookingSummary();
+        });
+
+        document.getElementById('complete-booking').addEventListener('click', () => {
+            // In a real app, you would validate form and send to server
+            bookingSummary.classList.add('hidden');
+            successModal.classList.remove('hidden');
+        });
+
+        document.querySelectorAll('.date-option').forEach((option, index) => {
+            option.addEventListener('click', () => {
+                document.querySelectorAll('.date-option').forEach(opt => {
+                    opt.classList.remove('bg-blue-50', 'border-blue-300');
+                });
+                option.classList.add('bg-blue-50', 'border-blue-300');
+
+                // Set selected date
+                if (index === 0) selectedDate = now;
+                else if (index === 1) selectedDate = tomorrow;
+                else if (index === 2) selectedDate = saturday;
+                else if (index === 3) selectedDate = sunday;
+            });
+        });
+
+        document.querySelectorAll('.time-slot').forEach(slot => {
+            slot.addEventListener('click', () => {
+                document.querySelectorAll('.time-slot').forEach(s => {
+                    s.classList.remove('selected');
+                });
+                slot.classList.add('selected');
+                selectedTimeSlot = slot;
+            });
+        });
+
+        // Initial render
+        renderTables();
+    </script>
+</body>
+</html>

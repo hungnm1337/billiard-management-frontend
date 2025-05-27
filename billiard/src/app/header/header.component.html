@@ -1,12 +1,17 @@
 <header class="bg-white shadow-md py-4 px-6 flex items-center justify-between">
-  <div class="flex items-center space-x-3">
-    <img routerLink="/" src="/Logo.png" alt="Logo" class="h-8 w-8">
+  <div class="flex items-center space-x-3 cursor-pointer">
+    <img routerLink="/" src="/Logo.png" alt="Logo" class="h-8 w-8 ">
     <span routerLink="/" class="text-xl font-bold text-gray-800">Billiard 99</span>
   </div>
   <nav class="space-x-6 hidden md:block">
-    <a routerLink="/" routerLinkActive="font-semibold text-blue-600" class="text-gray-700 hover:text-blue-600 transition">Trang chủ</a>
-    <a routerLink="/login" routerLinkActive="font-semibold text-blue-600" class="text-gray-700 hover:text-blue-600 transition">Đăng nhập</a>
+    @if(!nameuser){
+      <a routerLink="/login" routerLinkActive="font-semibold text-blue-600" class="text-gray-700 hover:text-blue-600 transition">Đăng nhập</a>
     <a routerLink="/register" routerLinkActive="font-semibold text-blue-600" class="text-gray-700 hover:text-blue-600 transition">Đăng kí</a>
+    }@else {
+            <a routerLink="/profile" routerLinkActive="font-semibold text-blue-600" class="text-gray-700 font-bold hover:text-blue-600 transition">{{nameuser}}</a>
+            <a (click)="logout()" routerLinkActive="font-semibold text-blue-600" class="text-gray-700 hover:text-blue-600 transition cursor-pointer">Đăng xuất</a>
+    }
+
   </nav>
   <button class="md:hidden text-gray-700 hover:text-blue-600">
     <!-- Icon menu (có thể dùng Heroicons hoặc SVG) -->

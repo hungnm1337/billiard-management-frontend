@@ -1,93 +1,108 @@
 <app-header></app-header>
+
 <!-- Hero Section -->
-<section class="bg-gradient-to-br from-green-900 to-green-700 text-white py-16 px-6 text-center">
-  <h1 class="text-4xl md:text-6xl font-bold mb-4">Welcome to Billiard Central</h1>
-  <p class="text-xl md:text-2xl mb-8">Nơi hội tụ những người yêu bi-a, giải trí và thi đấu chuyên nghiệp!</p>
-  <a routerLink="/booking" class="inline-block bg-yellow-400 text-green-900 font-bold py-3 px-8 rounded-full shadow hover:bg-yellow-300 transition">Đặt bàn ngay</a>
+<section class="bg-gradient-to-br from-green-900 to-green-700 text-white py-20 px-6 text-center">
+  <h1 class="text-4xl md:text-6xl font-extrabold mb-4 drop-shadow-lg">Welcome to <span class="text-yellow-400">Billiard Central</span></h1>
+  <p class="text-lg md:text-2xl mb-8 font-medium drop-shadow">Nơi hội tụ những người yêu bi-a, giải trí và thi đấu chuyên nghiệp!</p>
+  <a routerLink="/booking" class="inline-block bg-yellow-400 text-green-900 font-bold py-3 px-10 rounded-full shadow-lg hover:bg-yellow-300 transition-all duration-200">Đặt bàn ngay</a>
 </section>
 
 <!-- About Us -->
-<section class="py-12 px-6 max-w-4xl mx-auto">
-  <h2 class="text-3xl font-semibold mb-4 text-green-900">Về Chúng Tôi</h2>
-  <p class="text-gray-700 mb-6">
-    Billiard Central là câu lạc bộ bi-a hàng đầu, nơi bạn có thể thư giãn, luyện tập và thi đấu cùng bạn bè. Không gian hiện đại, bàn bi-a chuẩn quốc tế, phục vụ tận tình và các giải đấu thường xuyên.
+<section class="py-16 px-6 max-w-5xl mx-auto">
+  <h2 class="text-3xl md:text-4xl font-bold mb-6 text-green-900 text-center">Về Chúng Tôi</h2>
+  <p class="text-gray-700 mb-10 text-center text-lg">
+    <span class="font-semibold text-green-800">Billiard Central</span> là câu lạc bộ bi-a hàng đầu, nơi bạn có thể thư giãn, luyện tập và thi đấu cùng bạn bè. Không gian hiện đại, bàn bi-a chuẩn quốc tế, phục vụ tận tình và các giải đấu thường xuyên.
   </p>
-  <ul class="grid grid-cols-1 md:grid-cols-3 gap-6">
-    <li class="bg-white rounded shadow p-6">
-      <span class="block text-2xl font-bold text-green-800 mb-2">10+</span>
-      <span>Bàn bi-a tiêu chuẩn</span>
-    </li>
-    <li class="bg-white rounded shadow p-6">
-      <span class="block text-2xl font-bold text-green-800 mb-2">Giải đấu hàng tháng</span>
-      <span>Tham gia và nhận quà hấp dẫn</span>
-    </li>
-    <li class="bg-white rounded shadow p-6">
-      <span class="block text-2xl font-bold text-green-800 mb-2">Hướng dẫn viên</span>
-      <span>Hỗ trợ người mới chơi</span>
-    </li>
-  </ul>
-</section>
-
-<!-- Gallery -->
-<section class="bg-gray-100 py-12 px-6">
-  <h2 class="text-3xl font-semibold mb-6 text-green-900 text-center">Hình Ảnh Không Gian</h2>
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-    <img src="/p1.jpg" alt="Billiard Table" class="rounded shadow">
-    <img src="/p2.jpg" alt="Billiard Tournament" class="rounded shadow">
-    <img src="/p4.jpg" alt="Billiard Club" class="rounded shadow">
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+    <div class="bg-white rounded-xl shadow-lg p-8 flex flex-col items-center">
+      <span class="text-4xl font-extrabold text-green-800 mb-2">10+</span>
+      <span class="text-gray-700 font-medium">Bàn bi-a tiêu chuẩn</span>
+    </div>
+    <div class="bg-white rounded-xl shadow-lg p-8 flex flex-col items-center">
+      <span class="text-2xl font-bold text-green-800 mb-2">Giải đấu hàng tháng</span>
+      <span class="text-gray-700 font-medium text-center">Tham gia và nhận quà hấp dẫn</span>
+    </div>
+    <div class="bg-white rounded-xl shadow-lg p-8 flex flex-col items-center">
+      <span class="text-2xl font-bold text-green-800 mb-2">Hướng dẫn viên</span>
+      <span class="text-gray-700 font-medium text-center">Hỗ trợ người mới chơi</span>
+    </div>
   </div>
 </section>
 
-<!-- Events -->
-<section class="py-12 px-6 max-w-4xl mx-auto">
-  <h2 class="text-3xl font-semibold mb-4 text-green-900">Sự Kiện Sắp Tới</h2>
-  <ul class="space-y-4">
-    <li class="bg-white rounded shadow p-4 flex justify-between items-center">
-      <span>Giải đấu 8 bi mở rộng</span>
-      <span class="text-green-800 font-bold">25/05/2026</span>
-    </li>
-    <li class="bg-white rounded shadow p-4 flex justify-between items-center">
-      <span>Khóa học bi-a cơ bản miễn phí</span>
-      <span class="text-green-800 font-bold">01/06/2026</span>
-    </li>
-    <li class="bg-white rounded shadow p-4 flex justify-between items-center">
-      <span>Party Pool Night</span>
-      <span class="text-green-800 font-bold">15/06/2026</span>
-    </li>
-  </ul>
+<!-- Gallery -->
+<section class="bg-gray-50 py-16 px-6">
+  <h2 class="text-3xl md:text-4xl font-bold mb-8 text-green-900 text-center"></h2>
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+    <img src="/p1.jpg" alt="Billiard Table" class="rounded-xl shadow-lg object-cover aspect-video">
+    <img src="/p2.jpg" alt="Billiard Tournament" class="rounded-xl shadow-lg object-cover aspect-video">
+    <img src="/p4.jpg" alt="Billiard Club" class="rounded-xl shadow-lg object-cover aspect-video">
+  </div>
 </section>
-<section class="py-12 px-6 max-w-4xl mx-auto">
-  <h2 class="text-3xl font-semibold mb-4 text-green-900">Tin Tức Billiard Mới Nhất</h2>
-  @if (loading) {
-      <div>Đang tải tin tức...</div>
-  }
-  @if (error) {
-      <div class="text-red-600">{{ error }}</div>
-  }
-  @if (!loading && news.length > 0) {
-  <ul >
-    @for (article of news; track $index) {
-    <li  class="mb-6 pb-4 border-b border-gray-200">
-      <a [href]="article.url" target="_blank" class="text-xl font-bold text-green-800 hover:underline">{{ article.title }}</a>
-      <div class="text-sm text-gray-600 mb-1">
-        {{ article.author ? ('Tác giả: ' + article.author) : '' }}
-        {{ article.publishDate  }}
-      </div>
-      <p class="text-gray-700">{{ article.text.length > 200 ? (article.text | slice:0:200) + '...' : article.text }}</p>
-    </li>}
 
-  </ul>
-}
-  @if (!loading && news.length === 0) {
-      <div>Không có tin tức nào.</div>
+<!-- News & Video Section -->
+<section class="py-16 px-6 max-w-7xl mx-7">
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:pr-8">
+    <!-- News: 9/12, cách lề phải một đoạn -->
+    <div class="lg:col-span-9 lg:pr-8">
+      <h2 class="text-3xl md:text-4xl font-bold mb-6 text-green-900">Tin Tức Billiard Mới Nhất</h2>
+      @if (loading) {
+        <div class="text-center text-green-800 font-semibold">Đang tải tin tức...</div>
+      }
+      @if (error) {
+        <div class="text-center text-red-600 font-semibold">{{ error }}</div>
+      }
+      @if (!loading && news.length > 0) {
+        <ul>
+          @for (article of news; track $index) {
+            <li class="mb-8 mx-6 pb-6 border-b border-gray-200">
+              <a [href]="article.url" target="_blank" class="text-xl font-bold text-green-800 hover:underline">{{ article.title }}</a>
+              <div class="text-sm text-gray-600 mb-1">
+                {{ article.author ? ('Tác giả: ' + article.author) : '' }}
+                <span *ngIf="article.publishDate"> | {{ article.publishDate }}</span>
+              </div>
+              <p class="text-gray-700">{{ article.text.length > 200 ? (article.text| slice:0:200) + '...' : article.text }}</p>
+            </li>
+          }
+        </ul>
+      }
+      @if (!loading && news.length === 0) {
+        <div class="text-center text-gray-600">Không có tin tức nào.</div>
+      }
+    </div>
 
-  }
+    <!-- Video: 3/12, cách lề phải một đoạn -->
+    <div class="lg:col-span-3">
+      <h2 class="text-2xl md:text-3xl font-bold mb-6 text-green-900 text-center lg:text-left">Video Billiard Nổi Bật</h2>
+      @if (loadingV) {
+        <div class="text-center text-green-800 font-semibold">Đang tải dữ liệu...</div>
+      } @else if (errorV) {
+        <div class="text-center text-red-600 font-semibold">{{error}}</div>
+      } @else {
+        <div class="flex flex-col gap-8">
+          @for (video of videos; track video.id) {
+            <div class="bg-white rounded-xl shadow-lg p-4 flex flex-col items-center">
+              <div class="w-full mb-3">
+                @if (video.video_Files.length) {
+                  <video width="100%" height="auto" preload="metadata" controls class="rounded-lg w-full h-auto object-cover max-h-48">
+                    <source [src]="getBestVideoLink(video.video_Files)" type="video/mp4">
+                    Trình duyệt của bạn không hỗ trợ video.
+                  </video>
+                }
+              </div>
+              <p class="font-medium text-gray-800 mb-2 text-sm">Thời lượng: <span class="text-green-700">{{video.duration}} giây</span></p>
+              <a [href]="video.url" target="_blank" class="text-green-900 font-bold hover:underline text-sm">Xem trên Pexels</a>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
 </section>
+
 
 <!-- Contact / Call to Action -->
-<section class="bg-green-900 text-white py-12 px-6 text-center">
-  <h2 class="text-3xl font-semibold mb-4">Liên Hệ & Đặt Bàn</h2>
-  <p class="mb-6">Hotline: <a href="tel:0123456789" class="underline font-bold">0123 456 789</a> | Địa chỉ: 123 Đường Bi-a, Quận 1, TP.HCM</p>
-  <a routerLink="/contact" class="inline-block bg-yellow-400 text-green-900 font-bold py-3 px-8 rounded-full shadow hover:bg-yellow-300 transition">Liên hệ ngay</a>
+<section class="bg-green-900 text-white py-16 px-6 text-center">
+  <h2 class="text-3xl md:text-4xl font-bold mb-4">Liên Hệ & Đặt Bàn</h2>
+  <p class="mb-8 text-lg">Hotline: <a href="tel:0123456789" class="underline font-bold">0123 456 789</a> | Địa chỉ: 123 Đường Bi-a, Quận 1, TP.HCM</p>
+  <a routerLink="/contact" class="inline-block bg-yellow-400 text-green-900 font-bold py-3 px-10 rounded-full shadow-lg hover:bg-yellow-300 transition-all duration-200">Liên hệ ngay</a>
 </section>
-

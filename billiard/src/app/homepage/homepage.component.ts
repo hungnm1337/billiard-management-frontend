@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { HeaderComponent } from "../header/header.component";
-import { NewsService, NewsArticle } from '../services/news.service';
+import { NewsService, NewsArticle } from '../services/news/news.service';
 import { CommonModule } from '@angular/common';
+import { VideoService } from '../services/video/video.service';
 @Component({
   selector: 'app-homepage',
   standalone: true,
@@ -11,13 +12,26 @@ import { CommonModule } from '@angular/common';
 })
 export class HomepageComponent implements OnInit {
 
-   news: NewsArticle[] = [];
+  videos: any[] = [];
+  news: NewsArticle[] = [];
   loading = true;
   error = '';
+   loadingV = true;
+  errorV = '';
 
-  constructor(private newsService: NewsService) {}
+  constructor(private newsService: NewsService,private videoService: VideoService) {}
 
   ngOnInit(): void {
+    this.videoService.getVideos().subscribe({
+      next: (data) => {
+        this.videos = data;
+        this.loadingV = false;
+      },
+      error: (err) => {
+        this.errorV = 'Lỗi khi tải dữ liệu video!';
+        this.loadingV = false;
+      }
+    });
     this.newsService.getBilliardNews().subscribe({
       next: (data) => {
         this.news = data;
@@ -29,5 +43,13 @@ export class HomepageComponent implements OnInit {
       }
     });
     console.log(this.news);
+  }
+
+  getBestVideoLink(files: any[]): string {
+    const uhd = files.find(f => f.quality === 'uhd');
+    if (uhd) return uhd.link;
+    const hd = files.find(f => f.quality === 'hd');
+    if (hd) return hd.link;
+    return files[0].link;
   }
 }

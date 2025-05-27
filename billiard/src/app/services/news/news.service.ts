@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class NewsService {
-  private apiUrl = 'https://localhost:7176/api/API/billiardnews?number=5'
+  private apiUrl = 'https://localhost:7176/api/API/billiardnews'
 
   constructor(private http: HttpClient) {}
 
