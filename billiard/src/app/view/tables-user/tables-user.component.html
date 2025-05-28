@@ -1,0 +1,418 @@
+<!-- table-list.component.html - Light Theme -->
+<app-header></app-header>
+<div class="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-emerald-50 p-6">
+  <div class="max-w-7xl mx-auto">
+
+    <!-- Header -->
+    <div class="mb-8">
+      <h1 class="text-4xl font-bold text-gray-900 mb-4 flex items-center">
+        <i class="fas fa-list mr-3 text-emerald-600"></i>
+        Danh Sách Bàn Billiard
+      </h1>
+
+      <!-- Statistics Cards -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div class="bg-white/80 backdrop-blur-md rounded-lg p-4 border border-gray-200 shadow-sm">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-600 text-sm">Tổng số bàn</p>
+              <p class="text-2xl font-bold text-gray-900">{{ totalTables() }}</p>
+            </div>
+            <i class="fas fa-table text-2xl text-blue-500"></i>
+          </div>
+        </div>
+
+        <div class="bg-white/80 backdrop-blur-md rounded-lg p-4 border border-gray-200 shadow-sm">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-600 text-sm">Bàn trống</p>
+              <p class="text-2xl font-bold text-green-600">{{ availableTables() }}</p>
+            </div>
+            <i class="fas fa-check-circle text-2xl text-green-500"></i>
+          </div>
+        </div>
+
+        <div class="bg-white/80 backdrop-blur-md rounded-lg p-4 border border-gray-200 shadow-sm">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-600 text-sm">Đang sử dụng</p>
+              <p class="text-2xl font-bold text-red-600">{{ occupiedTables() }}</p>
+            </div>
+            <i class="fas fa-user-friends text-2xl text-red-500"></i>
+          </div>
+        </div>
+
+        <div class="bg-white/80 backdrop-blur-md rounded-lg p-4 border border-gray-200 shadow-sm">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-600 text-sm">Bảo trì</p>
+              <p class="text-2xl font-bold text-yellow-600">{{ maintenanceTables() }}</p>
+            </div>
+            <i class="fas fa-tools text-2xl text-yellow-500"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Error Message -->
+    @if (error()) {
+      <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 flex items-center justify-between">
+        <div class="flex items-center">
+          <i class="fas fa-exclamation-triangle text-red-500 mr-3"></i>
+          <span class="text-red-800">{{ error() }}</span>
+        </div>
+        <button
+          (click)="clearError()"
+          class="text-red-500 hover:text-red-700 transition-colors">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    }
+
+    <!-- Auto Refresh Status -->
+    <div class="mb-6 flex flex-col md:flex-row items-start md:items-center justify-between bg-white/60 rounded-lg p-4 space-y-3 md:space-y-0 border border-gray-200">
+      <div class="flex flex-wrap items-center gap-4">
+        <div class="flex items-center space-x-2">
+          <div [class]="'w-3 h-3 rounded-full ' + (autoRefreshEnabled() ? 'bg-green-500 animate-pulse' : 'bg-gray-400')"></div>
+          <span class="text-gray-700 text-sm">
+            Auto refresh: {{ autoRefreshEnabled() ? 'Bật' : 'Tắt' }}
+          </span>
+        </div>
+
+        <div class="text-gray-600 text-sm">
+          Cập nhật: {{ formatTime(lastUpdateTime()) }}
+        </div>
+
+        @if (loading()) {
+          <div class="flex items-center space-x-2 text-blue-600">
+            <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+            <span class="text-sm">Đang cập nhật...</span>
+          </div>
+        }
+      </div>
+
+      <div class="flex items-center space-x-2">
+        <button
+          (click)="toggleAutoRefresh()"
+          [class]="'px-3 py-1 rounded text-sm font-medium transition-colors ' + (autoRefreshEnabled() ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-gray-500 hover:bg-gray-600 text-white')">
+          <i [class]="autoRefreshEnabled() ? 'fas fa-pause' : 'fas fa-play'"></i>
+          {{ autoRefreshEnabled() ? 'Tạm dừng' : 'Bật lại' }}
+        </button>
+
+        <button
+          (click)="refreshData()"
+          [disabled]="loading()"
+          class="px-3 py-1 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded text-sm font-medium transition-colors flex items-center space-x-1">
+          <i [class]="loading() ? 'fas fa-spinner fa-spin' : 'fas fa-sync-alt'"></i>
+          <span>Làm mới</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Quick Filter Buttons -->
+    <div class="flex flex-wrap gap-2 mb-6">
+      <button
+        (click)="showAllTables()"
+        [class]="'px-4 py-2 rounded-lg text-sm font-medium transition-colors border ' + (statusFilter() === 'all' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50')">
+        <i class="fas fa-list mr-1"></i>
+        Tất cả ({{ totalTables() }})
+      </button>
+
+      <button
+        (click)="showAvailableOnly()"
+        [class]="'px-4 py-2 rounded-lg text-sm font-medium transition-colors border ' + (statusFilter() === 'Đang trống' ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50')">
+        <i class="fas fa-check-circle mr-1"></i>
+        Trống ({{ availableTables() }})
+      </button>
+
+      <button
+        (click)="showOccupiedOnly()"
+        [class]="'px-4 py-2 rounded-lg text-sm font-medium transition-colors border ' + (statusFilter() === 'Đang sử dụng' ? 'bg-red-600 text-white border-red-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50')">
+        <i class="fas fa-user-friends mr-1"></i>
+        Đang dùng ({{ occupiedTables() }})
+      </button>
+    </div>
+
+    <!-- Filters and Controls -->
+    <div class="bg-white/80 backdrop-blur-md rounded-xl p-6 border border-gray-200 mb-6 shadow-sm">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
+
+        <!-- Search -->
+        <div class="lg:col-span-2">
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            <i class="fas fa-search mr-1"></i>
+            Tìm kiếm
+          </label>
+          <input
+            type="text"
+            [formControl]="searchControl"
+            placeholder="Tìm theo tên bàn, ID hoặc trạng thái..."
+            class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all">
+        </div>
+
+        <!-- Status Filter -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            <i class="fas fa-filter mr-1"></i>
+            Trạng thái
+          </label>
+          <select
+            [formControl]="statusFilterControl"
+            class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all">
+            @for (option of statusOptions; track option.value) {
+              <option [value]="option.value" class="bg-white">{{ option.label }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Sort By -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            <i class="fas fa-sort mr-1"></i>
+            Sắp xếp theo
+          </label>
+          <select
+            [formControl]="sortByControl"
+            class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all">
+            @for (option of sortOptions; track option.value) {
+              <option [value]="option.value" class="bg-white">{{ option.label }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Sort Order & Actions -->
+        <div class="flex space-x-2">
+          <button
+            (click)="toggleSortOrder()"
+            class="flex-1 px-4 py-3 text-white rounded-lg transition-colors flex items-center justify-center font-medium"
+            [title]="sortOrder() === 'asc' ? 'Đang sắp xếp tăng dần' : 'Đang sắp xếp giảm dần'">
+            @if (sortOrder() === 'asc') {
+              <i class="fas fa-sort-amount-up"><img src="https://cdn-icons-png.flaticon.com/128/5610/5610930.png" loading="lazy" width="32" height="32"></i>
+            } @else {
+              <i class="fas fa-sort-amount-down"><img src="https://cdn-icons-png.flaticon.com/128/5974/5974734.png" loading="lazy" width="32" height="32"></i>
+            }
+          </button>
+
+          <button
+            (click)="resetFilters()"
+            class="px-4 py-3 text-white rounded-lg transition-colors flex items-center justify-center font-medium"
+            title="Xóa tất cả bộ lọc">
+            <i class="fas fa-eraser"><img src="https://cdn-icons-png.flaticon.com/128/2087/2087825.png" loading="lazy"  width="32" height="32"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results Count -->
+    <div class="mb-6 text-center">
+      <p class="text-gray-700">
+        Hiển thị <span class="text-emerald-600 font-bold">{{ filteredAndSortedTables().length }}</span>
+        / <span class="text-gray-900 font-bold">{{ totalTables() }}</span> bàn
+        @if (hasActiveFilters()) {
+          <button
+            (click)="resetFilters()"
+            class="ml-2 text-emerald-600 hover:text-emerald-700 underline text-sm font-medium">
+            (Xóa bộ lọc)
+          </button>
+        }
+      </p>
+    </div>
+
+    <!-- Loading State (Initial Load) -->
+    @if (loading() && totalTables() === 0) {
+      <div class="text-center py-16">
+        <div class="inline-flex flex-col items-center space-y-4">
+          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
+          <div class="text-gray-700">
+            <p class="text-lg font-medium">Đang tải dữ liệu bàn...</p>
+            <p class="text-sm text-gray-600">Vui lòng đợi trong giây lát</p>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Table Grid -->
+    @if (filteredAndSortedTables().length > 0) {
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        @for (table of filteredAndSortedTables(); track table.tableId) {
+          <div
+            class="bg-white/90 backdrop-blur-md rounded-xl p-6 border border-gray-200 hover:border-emerald-400 hover:shadow-lg transition-all duration-300 cursor-pointer transform hover:scale-105"
+            [class.ring-2]="selectedTable()?.tableId === table.tableId"
+            [class.ring-emerald-500]="selectedTable()?.tableId === table.tableId"
+            [class.shadow-md]="selectedTable()?.tableId === table.tableId"
+            (click)="selectTable(table)">
+
+            <!-- Table Header -->
+            <div class="flex items-start justify-between mb-4">
+              <div>
+                <h3 class="text-xl font-bold text-gray-900 mb-1">{{ table.tableName }}</h3>
+                <p class="text-gray-600 text-sm">ID: #{{ table.tableId }}</p>
+              </div>
+              <div class="text-right">
+                <span [class]="'px-3 py-1 rounded-full text-xs font-medium flex items-center ' + getStatusColor(table.status)">
+                  <i [class]="getStatusIcon(table.status) + ' mr-1'"></i>
+                  {{ table.status }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Table Info -->
+            <div class="space-y-3 mb-4">
+              <div class="flex items-center justify-between text-gray-700">
+                <div class="flex items-center">
+                  <i class="fas fa-money-bill-wave w-5 text-emerald-600"></i>
+                  <span class="ml-2">Giá thuê:</span>
+                </div>
+                <span class="text-emerald-600 font-bold">{{ formatPrice(table.hourlyRate) }}/giờ</span>
+              </div>
+
+              <!-- Additional Info based on status -->
+              @if (table.status === 'Đang sử dụng') {
+                <div class="flex items-center text-red-600 text-sm">
+                  <i class="fas fa-clock w-4"></i>
+                  <span class="ml-2">Đang có khách</span>
+                </div>
+              } @else if (table.status === 'Đang bảo trì') {
+                <div class="flex items-center text-yellow-600 text-sm">
+                  <i class="fas fa-wrench w-4"></i>
+                  <span class="ml-2">Đang bảo trì</span>
+                </div>
+              } @else if (table.status === 'Đã đặt trước') {
+                <div class="flex items-center text-blue-600 text-sm">
+                  <i class="fas fa-calendar-check w-4"></i>
+                  <span class="ml-2">Đã có lịch đặt</span>
+                </div>
+              }
+            </div>
+
+            <!-- Action Button -->
+            <div class="mt-4">
+              @if (table.status === 'Đang trống') {
+                <button
+                  (click)="bookTable(table); $event.stopPropagation()"
+                  class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center">
+                  <i class="fas fa-calendar-plus mr-2"></i>
+                  Đặt bàn ngay
+                </button>
+              } @else {
+                <button
+                  disabled
+                  class="w-full bg-gray-400 opacity-60 cursor-not-allowed text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center">
+                  <i class="fas fa-ban mr-2"></i>
+                  Không khả dụng
+                </button>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    } @else if (!loading()) {
+      <!-- Empty State -->
+      <div class="text-center py-16">
+        <div class="text-6xl text-gray-400 mb-6">
+          @if (hasActiveFilters()) {
+            <i class="fas fa-search"></i>
+          } @else {
+            <i class="fas fa-table"></i>
+          }
+        </div>
+
+        @if (hasActiveFilters()) {
+          <h3 class="text-xl font-medium text-gray-800 mb-2">Không tìm thấy bàn phù hợp</h3>
+          <p class="text-gray-600 mb-6">Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm</p>
+          <div class="space-y-2">
+            <button
+              (click)="resetFilters()"
+              class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 px-6 rounded-lg transition-colors mx-2">
+              <i class="fas fa-eraser mr-2"></i>
+              Xóa bộ lọc
+            </button>
+            <button
+              (click)="refreshData()"
+              class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors mx-2">
+              <i class="fas fa-sync-alt mr-2"></i>
+              Làm mới dữ liệu
+            </button>
+          </div>
+        } @else if (totalTables() === 0) {
+          <h3 class="text-xl font-medium text-gray-800 mb-2">Chưa có dữ liệu bàn</h3>
+          <p class="text-gray-600 mb-6">Hệ thống chưa có thông tin về các bàn billiard</p>
+          <button
+            (click)="refreshData()"
+            class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 px-6 rounded-lg transition-colors">
+            <i class="fas fa-sync-alt mr-2"></i>
+            Tải lại dữ liệu
+          </button>
+        } @else {
+          <h3 class="text-xl font-medium text-gray-800 mb-2">Có lỗi hiển thị</h3>
+          <p class="text-gray-600 mb-6">Đã có dữ liệu nhưng không thể hiển thị</p>
+          <button
+            (click)="refreshData()"
+            class="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-6 rounded-lg transition-colors">
+            <i class="fas fa-bug mr-2"></i>
+            Debug & Reload
+          </button>
+        }
+      </div>
+    }
+
+    <!-- Selected Table Modal -->
+    @if (selectedTable()) {
+      <div class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white/95 backdrop-blur-md rounded-2xl p-8 max-w-md w-full border border-gray-200 shadow-xl animate-in fade-in duration-200">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-2xl font-bold text-gray-900">Chi tiết bàn</h3>
+            <button
+              (click)="clearSelection()"
+              class="text-gray-500 hover:text-gray-700 transition-colors">
+              <i class="fas fa-times text-xl"></i>
+            </button>
+          </div>
+
+          <div class="space-y-4 mb-6">
+            <div class="flex justify-between items-center">
+              <span class="text-gray-700">Tên bàn:</span>
+              <span class="text-gray-900 font-medium">{{ selectedTable()!.tableName }}</span>
+            </div>
+
+            <div class="flex justify-between items-center">
+              <span class="text-gray-700">ID:</span>
+              <span class="text-gray-900 font-mono">#{{ selectedTable()!.tableId }}</span>
+            </div>
+
+            <div class="flex justify-between items-center">
+              <span class="text-gray-700">Trạng thái:</span>
+              <span [class]="'px-3 py-1 rounded-full text-xs font-medium ' + getStatusColor(selectedTable()!.status)">
+                <i [class]="getStatusIcon(selectedTable()!.status) + ' mr-1'"></i>
+                {{ selectedTable()!.status }}
+              </span>
+            </div>
+
+            <div class="flex justify-between items-center">
+              <span class="text-gray-700">Giá thuê:</span>
+              <span class="text-emerald-600 font-bold text-lg">{{ formatPrice(selectedTable()!.hourlyRate) }}/giờ</span>
+            </div>
+          </div>
+
+          @if (selectedTable()!.status === 'Đang trống') {
+            <button
+              (click)="bookTable(selectedTable()!)"
+              class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-lg transition-colors flex items-center justify-center">
+              <i class="fas fa-calendar-plus mr-2"></i>
+              Đặt bàn ngay
+            </button>
+          } @else {
+            <div class="text-center">
+              <p class="text-gray-600 mb-3">Bàn hiện tại không khả dụng</p>
+              <button
+                (click)="clearSelection()"
+                class="bg-gray-500 hover:bg-gray-600 text-white font-medium py-2 px-6 rounded-lg transition-colors">
+                Đóng
+              </button>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+</div>

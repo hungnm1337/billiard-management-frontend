@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { HeaderComponent } from "../header/header.component";
-import { RegisterService } from '../services/register/register.service';
+import { RegisterService } from '../../services/register/register.service';
 import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 @Component({
   selector: 'app-register',
@@ -63,14 +63,14 @@ export class RegisterComponent {
     if (this.registerForm.invalid) return;
 
     this.registerService.register(this.registerForm.value).subscribe({
-      next: (response) => {
+      next: (response: { status: number; }) => {
         if (response.status === 200) {
           this.successMessage = 'Đăng ký thành công!';
           this.registerForm.reset();
           this.submitted = false;
         }
       },
-      error: (error) => {
+      error: (error: { status: number; }) => {
         if (error.status === 400) {
           this.errorMessage = 'Username đã tồn tại. Vui lòng chọn username khác.';
         } else {
