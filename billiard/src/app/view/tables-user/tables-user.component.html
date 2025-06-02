@@ -192,7 +192,7 @@
         </div>
 
         <!-- Sort Order & Actions -->
-        <div class="flex space-x-2">
+        <div class="flex space-x-1">
           <button
             (click)="toggleSortOrder()"
             class="flex-1 px-4 py-3 text-white rounded-lg transition-colors flex items-center justify-center font-medium"
@@ -210,11 +210,13 @@
             }
           </button>
 
-          <button
+          <button class="flex-1 py-3 text-white rounded-lg transition-colors flex items-center justify-center font-medium">
+            <button
             (click)="resetFilters()"
-            class="px-4 py-3 text-white rounded-lg transition-colors flex items-center justify-center font-medium"
+            class=" text-white  bg-red-500 hover:bg-red-600 px-3 py-2 rounded transition-colors "
             title="Xóa tất cả bộ lọc">
-            <i class="fas fa-eraser"><img src="https://cdn-icons-png.flaticon.com/128/2087/2087825.png" loading="lazy"  width="32" height="32"></i>
+            Xóa
+          </button>
           </button>
         </div>
       </div>

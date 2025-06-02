@@ -21,6 +21,33 @@ export class HomepageComponent implements OnInit {
   errorV = '';
 
   constructor(private newsService: NewsService,private videoService: VideoService) {}
+// Thêm vào component TypeScript
+ngAfterViewInit() {
+  this.observeScrollAnimations();
+}
+
+private observeScrollAnimations() {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('fade-in-up');
+        if (entry.target.classList.contains('fade-in-left')) {
+          entry.target.classList.add('fade-in-left');
+        }
+        if (entry.target.classList.contains('fade-in-right')) {
+          entry.target.classList.add('fade-in-right');
+        }
+      }
+    });
+  }, {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+  });
+
+  document.querySelectorAll('.scroll-animate').forEach(el => {
+    observer.observe(el);
+  });
+}
 
   ngOnInit(): void {
     this.videoService.getVideos().subscribe({

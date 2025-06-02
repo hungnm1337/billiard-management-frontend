@@ -399,11 +399,6 @@ bookTable(table: Table) {
     // Thêm logic khác nếu cần khi đóng popup
   }
 
-// Giả sử đây là một phần của class TablesUserComponent
-// và bạn đã khai báo các signals/viewChild cần thiết:
-// otpPopupRef = viewChild<OtpPopupComponent>('otpPopupRef');
-// showOtpModal = signal(false);
-// currentOrderId = signal<number | null>(null); // Nên là number | null
 
 handleOtpVerifyAttempt(userEnteredOtp: string): void {
   console.log('OTP Verify attempt event received with user-entered OTP:', userEnteredOtp);

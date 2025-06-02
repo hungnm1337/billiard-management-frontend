@@ -1,61 +1,97 @@
 <app-header></app-header>
 
-<!-- Hero Section -->
-<section class="bg-gradient-to-br from-green-900 to-green-700 text-white py-20 px-6 text-center">
-  <h1 class="text-4xl md:text-6xl font-extrabold mb-4 drop-shadow-lg">Welcome to <span class="text-yellow-400">Billiard Central</span></h1>
-  <p class="text-lg md:text-2xl mb-8 font-medium drop-shadow">Nơi hội tụ những người yêu bi-a, giải trí và thi đấu chuyên nghiệp!</p>
-  <a routerLink="/tablesuser" class="inline-block bg-yellow-400 text-green-900 font-bold py-3 px-10 rounded-full shadow-lg hover:bg-yellow-300 transition-all duration-200">Đặt bàn ngay</a>
+<!-- Hero Section với animation -->
+<section class="bg-gradient-to-br from-green-900 via-green-800 to-green-700 text-white py-20 px-6 text-center relative overflow-hidden">
+  <!-- Background animation -->
+  <div class="absolute inset-0 opacity-10">
+    <div class="absolute top-10 left-10 w-20 h-20 bg-yellow-400 rounded-full animate-bounce"></div>
+    <div class="absolute top-32 right-20 w-16 h-16 bg-white rounded-full animate-pulse"></div>
+    <div class="absolute bottom-20 left-1/4 w-12 h-12 bg-yellow-300 rounded-full animate-ping"></div>
+  </div>
+
+  <div class="relative z-10 animate-fade-in-up">
+    <h1 class="text-4xl md:text-6xl font-extrabold mb-4 drop-shadow-lg animate-slide-down">
+      Welcome to <span class="text-yellow-400 animate-pulse">Billiard JQK</span>
+    </h1>
+    <p class="text-lg md:text-2xl mb-8 font-medium drop-shadow animate-slide-up opacity-0 animation-delay-300">
+      Nơi hội tụ những người yêu bi-a, giải trí và thi đấu chuyên nghiệp!
+    </p>
+    <a routerLink="/tablesuser"
+       class="inline-block bg-yellow-400 text-green-900 font-bold py-3 px-10 rounded-full shadow-lg hover:bg-yellow-300 hover:scale-110 hover:shadow-2xl transition-all duration-300 transform animate-bounce-in opacity-0 animation-delay-600">
+      Đặt bàn ngay
+    </a>
+  </div>
 </section>
 
-<!-- About Us -->
+<!-- About Us với scroll animations -->
 <section class="py-16 px-6 max-w-5xl mx-auto">
-  <h2 class="text-3xl md:text-4xl font-bold mb-6 text-green-900 text-center">Về Chúng Tôi</h2>
-  <p class="text-gray-700 mb-10 text-center text-lg">
-    <span class="font-semibold text-green-800">Billiard Central</span> là câu lạc bộ bi-a hàng đầu, nơi bạn có thể thư giãn, luyện tập và thi đấu cùng bạn bè. Không gian hiện đại, bàn bi-a chuẩn quốc tế, phục vụ tận tình và các giải đấu thường xuyên.
+  <h2 class="text-3xl md:text-4xl font-bold mb-6 text-green-900 text-center scroll-animate fade-in-up">
+    Về Chúng Tôi
+  </h2>
+  <p class="text-gray-700 mb-10 text-center text-lg scroll-animate fade-in-up animation-delay-200">
+    <span class="font-semibold text-green-800">Billiard JQK</span> là câu lạc bộ bi-a hàng đầu, nơi bạn có thể thư giãn, luyện tập và thi đấu cùng bạn bè. Không gian hiện đại, bàn bi-a chuẩn quốc tế, phục vụ tận tình và các giải đấu thường xuyên.
   </p>
   <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-    <div class="bg-white rounded-xl shadow-lg p-8 flex flex-col items-center">
-      <span class="text-4xl font-extrabold text-green-800 mb-2">10+</span>
+    <div class="bg-white rounded-xl shadow-lg p-8 flex flex-col items-center hover:shadow-2xl hover:scale-105 transition-all duration-300 scroll-animate fade-in-up animation-delay-300 group">
+      <span class="text-4xl font-extrabold text-green-800 mb-2 group-hover:animate-pulse">10+</span>
       <span class="text-gray-700 font-medium">Bàn bi-a tiêu chuẩn</span>
     </div>
-    <div class="bg-white rounded-xl shadow-lg p-8 flex flex-col items-center">
-      <span class="text-2xl font-bold text-green-800 mb-2">Giải đấu hàng tháng</span>
+    <div class="bg-white rounded-xl shadow-lg p-8 flex flex-col items-center hover:shadow-2xl hover:scale-105 transition-all duration-300 scroll-animate fade-in-up animation-delay-500 group">
+      <span class="text-2xl font-bold text-green-800 mb-2 group-hover:animate-bounce">Giải đấu hàng tháng</span>
       <span class="text-gray-700 font-medium text-center">Tham gia và nhận quà hấp dẫn</span>
     </div>
-    <div class="bg-white rounded-xl shadow-lg p-8 flex flex-col items-center">
-      <span class="text-2xl font-bold text-green-800 mb-2">Hướng dẫn viên</span>
+    <div class="bg-white rounded-xl shadow-lg p-8 flex flex-col items-center hover:shadow-2xl hover:scale-105 transition-all duration-300 scroll-animate fade-in-up animation-delay-700 group">
+      <span class="text-2xl font-bold text-green-800 mb-2 group-hover:animate-pulse">Hướng dẫn viên</span>
       <span class="text-gray-700 font-medium text-center">Hỗ trợ người mới chơi</span>
     </div>
   </div>
 </section>
 
-<!-- Gallery -->
+<!-- Gallery với hover effects -->
 <section class="bg-gray-50 py-16 px-6">
-  <h2 class="text-3xl md:text-4xl font-bold mb-8 text-green-900 text-center"></h2>
+  <h2 class="text-3xl md:text-4xl font-bold mb-8 text-green-900 text-center scroll-animate fade-in-up">
+    Thư Viện Hình Ảnh
+  </h2>
   <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-    <img src="/p1.jpg" alt="Billiard Table" class="rounded-xl shadow-lg object-cover aspect-video">
-    <img src="/p2.jpg" alt="Billiard Tournament" class="rounded-xl shadow-lg object-cover aspect-video">
-    <img src="/p4.jpg" alt="Billiard Club" class="rounded-xl shadow-lg object-cover aspect-video">
+    <div class="scroll-animate fade-in-left animation-delay-200">
+      <img src="/p1.jpg" alt="Billiard Table"
+           class="rounded-xl shadow-lg object-cover aspect-video hover:scale-110 hover:shadow-2xl transition-all duration-500 cursor-pointer">
+    </div>
+    <div class="scroll-animate fade-in-up animation-delay-400">
+      <img src="/p2.jpg" alt="Billiard Tournament"
+           class="rounded-xl shadow-lg object-cover aspect-video hover:scale-110 hover:shadow-2xl transition-all duration-500 cursor-pointer">
+    </div>
+    <div class="scroll-animate fade-in-right animation-delay-600">
+      <img src="/p4.jpg" alt="Billiard Club"
+           class="rounded-xl shadow-lg object-cover aspect-video hover:scale-110 hover:shadow-2xl transition-all duration-500 cursor-pointer">
+    </div>
   </div>
 </section>
 
-<!-- News & Video Section -->
+<!-- News & Video Section với staggered animations -->
 <section class="py-16 px-6 max-w-7xl mx-7">
   <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:pr-8">
-    <!-- News: 9/12, cách lề phải một đoạn -->
-    <div class="lg:col-span-9 lg:pr-8">
+    <!-- News: 9/12 -->
+    <div class="lg:col-span-9 lg:pr-8 scroll-animate fade-in-left">
       <h2 class="text-3xl md:text-4xl font-bold mb-6 text-green-900">Tin Tức Billiard Mới Nhất</h2>
       @if (loading) {
-        <div class="text-center text-green-800 font-semibold">Đang tải tin tức...</div>
+        <div class="text-center text-green-800 font-semibold animate-pulse">
+          <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-green-800 mr-2"></div>
+          Đang tải tin tức...
+        </div>
       }
       @if (error) {
-        <div class="text-center text-red-600 font-semibold">{{ error }}</div>
+        <div class="text-center text-red-600 font-semibold animate-shake">{{ error }}</div>
       }
       @if (!loading && news.length > 0) {
         <ul>
           @for (article of news; track $index) {
-            <li class="mb-8 mx-6 pb-6 border-b border-gray-200">
-              <a [href]="article.url" target="_blank" class="text-xl font-bold text-green-800 hover:underline">{{ article.title }}</a>
+            <li class="mb-8 mx-6 pb-6 border-b border-gray-200 hover:bg-gray-50 hover:shadow-md rounded-lg p-4 transition-all duration-300 scroll-animate fade-in-up"
+                [style.animation-delay]="($index * 100) + 'ms'">
+              <a [href]="article.url" target="_blank"
+                 class="text-xl font-bold text-green-800 hover:underline hover:text-green-600 transition-colors duration-200">
+                {{ article.title }}
+              </a>
               <div class="text-sm text-gray-600 mb-1">
                 {{ article.author ? ('Tác giả: ' + article.author) : '' }}
                 <span *ngIf="article.publishDate"> | {{ article.publishDate }}</span>
@@ -66,31 +102,41 @@
         </ul>
       }
       @if (!loading && news.length === 0) {
-        <div class="text-center text-gray-600">Không có tin tức nào.</div>
+        <div class="text-center text-gray-600 animate-fade-in">Không có tin tức nào.</div>
       }
     </div>
 
-    <!-- Video: 3/12, cách lề phải một đoạn -->
-    <div class="lg:col-span-3">
+    <!-- Video: 3/12 -->
+    <div class="lg:col-span-3 scroll-animate fade-in-right">
       <h2 class="text-2xl md:text-3xl font-bold mb-6 text-green-900 text-center lg:text-left">Video Billiard Nổi Bật</h2>
       @if (loadingV) {
-        <div class="text-center text-green-800 font-semibold">Đang tải dữ liệu...</div>
+        <div class="text-center text-green-800 font-semibold animate-pulse">
+          <div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-green-800 mr-2"></div>
+          Đang tải dữ liệu...
+        </div>
       } @else if (errorV) {
-        <div class="text-center text-red-600 font-semibold">{{error}}</div>
+        <div class="text-center text-red-600 font-semibold animate-shake">{{error}}</div>
       } @else {
         <div class="flex flex-col gap-8">
           @for (video of videos; track video.id) {
-            <div class="bg-white rounded-xl shadow-lg p-4 flex flex-col items-center">
-              <div class="w-full mb-3">
+            <div class="bg-white rounded-xl shadow-lg p-4 flex flex-col items-center hover:shadow-2xl hover:scale-105 transition-all duration-300 scroll-animate fade-in-up group"
+                 [style.animation-delay]="($index * 150) + 'ms'">
+              <div class="w-full mb-3 overflow-hidden rounded-lg">
                 @if (video.video_Files.length) {
-                  <video width="100%" height="auto" preload="metadata" controls class="rounded-lg w-full h-auto object-cover max-h-48">
+                  <video width="100%" height="auto" preload="metadata" controls
+                         class="rounded-lg w-full h-auto object-cover max-h-48 hover:scale-105 transition-transform duration-300">
                     <source [src]="getBestVideoLink(video.video_Files)" type="video/mp4">
                     Trình duyệt của bạn không hỗ trợ video.
                   </video>
                 }
               </div>
-              <p class="font-medium text-gray-800 mb-2 text-sm">Thời lượng: <span class="text-green-700">{{video.duration}} giây</span></p>
-              <a [href]="video.url" target="_blank" class="text-green-900 font-bold hover:underline text-sm">Xem trên Pexels</a>
+              <p class="font-medium text-gray-800 mb-2 text-sm group-hover:text-green-700 transition-colors duration-200">
+                Thời lượng: <span class="text-green-700 font-bold">{{video.duration}} giây</span>
+              </p>
+              <a [href]="video.url" target="_blank"
+                 class="text-green-900 font-bold hover:underline text-sm hover:text-green-600 transition-colors duration-200">
+                Xem trên Pexels
+              </a>
             </div>
           }
         </div>
@@ -99,10 +145,24 @@
   </div>
 </section>
 
+<!-- Contact với floating animation -->
+<section class="bg-gradient-to-r from-green-900 via-green-800 to-green-900 text-white py-16 px-6 text-center relative overflow-hidden">
+  <!-- Floating elements -->
+  <div class="absolute inset-0 opacity-5">
+    <div class="absolute top-10 left-10 w-32 h-32 bg-yellow-400 rounded-full animate-float"></div>
+    <div class="absolute bottom-10 right-10 w-24 h-24 bg-white rounded-full animate-float-reverse"></div>
+    <div class="absolute top-1/2 left-1/4 w-16 h-16 bg-yellow-300 rounded-full animate-float-slow"></div>
+  </div>
 
-<!-- Contact / Call to Action -->
-<section class="bg-green-900 text-white py-16 px-6 text-center">
-  <h2 class="text-3xl md:text-4xl font-bold mb-4">Liên Hệ & Đặt Bàn</h2>
-  <p class="mb-8 text-lg">Hotline: <a href="tel:0123456789" class="underline font-bold">0123 456 789</a> | Địa chỉ: 123 Đường Bi-a, Quận 1, TP.HCM</p>
-  <a routerLink="/contact" class="inline-block bg-yellow-400 text-green-900 font-bold py-3 px-10 rounded-full shadow-lg hover:bg-yellow-300 transition-all duration-200">Liên hệ ngay</a>
+  <div class="relative z-10 scroll-animate fade-in-up">
+    <h2 class="text-3xl md:text-4xl font-bold mb-4 animate-slide-down">Liên Hệ & Đặt Bàn</h2>
+    <p class="mb-8 text-lg animate-slide-up animation-delay-200">
+      Hotline: <a href="tel:0123456789" class="underline font-bold hover:text-yellow-400 transition-colors duration-200">0123 456 789</a> |
+      Địa chỉ: 123 Đường Bi-a, Quận 1, TP.HCM
+    </p>
+    <a routerLink="/contact"
+       class="inline-block bg-yellow-400 text-green-900 font-bold py-3 px-10 rounded-full shadow-lg hover:bg-yellow-300 hover:scale-110 hover:shadow-2xl transition-all duration-300 transform animate-bounce-in animation-delay-400">
+      Liên hệ ngay
+    </a>
+  </div>
 </section>
