@@ -5,6 +5,14 @@
 <!-- Existing table content -->
 
 <!-- OTP Modal -->
+<!-- CHÚ Ý 1: Template reference variable -->
+<app-otp-popup
+  #otpPopupRef
+  [isOpen]="showOtpModal()"
+  (closePopup)="handleOtpPopupClose()"
+  (verifyAttempt)="handleOtpVerifyAttempt($event)"
+  (resendAttempt)="handleOtpResendAttempt()">
+</app-otp-popup>
 
     <!-- Header -->
     <div class="mb-8">

@@ -1,0 +1,69 @@
+<!-- src/app/components/otp-popup/otp-popup.component.html -->
+@if (isOpen) {
+  <div class="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900 bg-opacity-75 transition-opacity duration-300 ease-in-out"
+       (click)="onCloseClicked()"> <!-- Click ra ngoài để đóng -->
+
+    <div class="relative bg-white rounded-lg shadow-xl p-6 md:p-8 w-full max-w-md transform transition-all duration-300 ease-in-out scale-100"
+         (click)="$event.stopPropagation()"> <!-- Ngăn sự kiện click lan ra overlay -->
+
+      <!-- Nút Đóng Popup -->
+      <button type="button"
+              (click)="onCloseClicked()"
+              class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 p-1 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+      </button>
+
+      <div class="text-center">
+        <!-- Icon và Tiêu đề -->
+        <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 mb-4">
+          <svg class="h-6 w-6 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
+          </svg>
+        </div>
+        <h3 class="text-xl font-semibold text-gray-900 mb-2">Xác thực OTP</h3>
+        <p class="text-sm text-gray-600 mb-6">
+          Một mã OTP đã được gửi đến email của bạn. Vui lòng nhập mã (6 chữ số) vào ô bên dưới.
+        </p>
+
+        <!-- Ô nhập OTP -->
+        <input type="text"
+               [(ngModel)]="otpCode"
+               id="otpInputPopup"
+               name="otpInputPopup"
+               class="w-full px-4 py-3 text-center text-lg tracking-[0.3em] border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-gray-400"
+               placeholder="------"
+               maxlength="6"
+               pattern="\d{6}"
+               inputmode="numeric"
+               (input)="resetMessages()"> <!-- Xóa thông báo khi người dùng bắt đầu nhập lại -->
+
+        <!-- Thông báo lỗi và thành công -->
+        @if (errorMessage) {
+          <p class="text-red-500 text-sm mt-3 min-h-[20px]">{{ errorMessage }}</p>
+        }
+        @if (successMessage) {
+          <p class="text-green-600 text-sm mt-3 min-h-[20px]">{{ successMessage }}</p>
+        }
+
+        <!-- Các nút hành động -->
+        <div class="mt-8 space-y-3">
+          <button type="button"
+                  (click)="onVerifyClicked()"
+                  class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out">
+            Xác nhận
+          </button>
+          <button type="button"
+                  (click)="onResendClicked()"
+                  [disabled]="resendDisabled"
+                  class="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-3 px-4 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 transition duration-150 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed">
+            Gửi lại OTP
+            @if (resendDisabled) {
+              <span> ({{ cooldownTimer }}s)</span>
+            }
+          </button>
+        </div>
+         <p class="text-xs text-gray-500 mt-4">Mã OTP có hiệu lực trong 5 phút.</p>
+      </div>
+    </div>
+  </div>
+}

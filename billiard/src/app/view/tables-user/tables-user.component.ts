@@ -9,16 +9,19 @@ import { Table, TableStatus } from '../../interface/table.interface';
 import { HeaderComponent } from "../header/header.component";
 import { routes } from '../../app.routes';
 import { Router } from '@angular/router';
+import { OtpService } from '../../services/otp.service';
+import { OtpPopupComponent } from '../otp/otp-popup/otp-popup.component';
 
 @Component({
   selector: 'app-tables-user',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, HeaderComponent],
+  imports: [CommonModule, ReactiveFormsModule, HeaderComponent, OtpPopupComponent],
   templateUrl: './tables-user.component.html',
   styleUrl: './tables-user.component.scss'
 })
 export class TablesUserComponent implements OnInit {
 
+ otpPopupRef = viewChild<OtpPopupComponent>('otpPopupRef');
   showOtpModal = signal(false);
   currentOrderId = signal(0);
   allTables = signal<Table[]>([]);
@@ -55,9 +58,12 @@ export class TablesUserComponent implements OnInit {
     { value: 'price', label: 'Giá tiền' },
     { value: 'status', label: 'Trạng thái' }
   ];
-constructor(private router: Router, private authService: AuthService) {}
-   // CLIENT-SIDE FILTERING & SORTING
-  filteredAndSortedTables = computed(() => {
+constructor(private router: Router, private authService: AuthService,private otpService: OtpService) {
+
+}
+
+
+filteredAndSortedTables = computed(() => {
     let tables = [...this.allTables()]; // Clone để không ảnh hưởng dữ liệu gốc
 
     // 1. SEARCH FILTER (Client-side)
@@ -136,7 +142,7 @@ constructor(private router: Router, private authService: AuthService) {}
   );
 
   ngOnInit(): void {
-     this.loadTables();
+    this.loadTables();
     this.setupFormControls();
     this.subscribeToService();
   }
@@ -309,63 +315,194 @@ constructor(private router: Router, private authService: AuthService) {}
   }
 
   // Booking action
-  bookTable(table: Table) {
-     if (table.status === TableStatus.AVAILABLE) {
-      console.log('Booking table:', table.tableId);
-    }
+bookTable(table: Table) {
+  // 1. Kiểm tra trạng thái bàn
+  if (table.status !== TableStatus.AVAILABLE) {
+    alert(`Bàn ${table.tableName} hiện không có sẵn để đặt.`);
+    console.warn(`Attempted to book non-available table: ${table.tableName} (Status: ${table.status})`);
+    return;
+  }
 
-    // lấy userid từ localhost
-    const userId = this.authService.getUserId();
-    if (!userId) {
-      console.error('User ID not found in local storage');
-      return;
-    }else{
-      console.log('User ID:', userId);
-    }
-    // Gọi service để đặt bàn
-    this.tableService.bookTable(table.tableId, Number(userId)).subscribe({
-      next: (response) => {
-        if (response.success) {
-          alert(`Đặt bàn ${table.tableName} thành công!`);
-        }
-      },
-      error: (error) => {
-        alert('Lỗi đặt bàn: ' + error.message);
+  // 2. Lấy và kiểm tra User ID
+  const userId = this.authService.getUserId();
+  if (!userId) {
+    console.error('User ID not found. User needs to log in.');
+    alert('Bạn cần đăng nhập để thực hiện chức năng này.');
+    // 3. Điều hướng người dùng đến trang đăng nhập
+    this.router.navigate(['/login']);
+    return;
+  }
+  console.log(`User ID: ${userId} attempting to book Table ID: ${table.tableId}`);
+
+  // 4. Gọi API đặt bàn
+  // Giả định this.tableService.bookTable trả về trực tiếp ID (là một số)
+  this.tableService.bookTable(table.tableId, Number(userId)).subscribe({
+    next: (orderId) => { // API trả về trực tiếp ID (số)
+      console.log('Booking API Response (Order ID):', orderId);
+
+      // 5. Kiểm tra Order ID nhận được
+      if (typeof orderId !== 'number' || orderId <= 0) {
+        console.error('Invalid Order ID received from booking response:', orderId);
+        alert('Đặt bàn không thành công: Không nhận được ID đơn hàng hợp lệ từ hệ thống.');
+        this.currentOrderId.set(0); // Đảm bảo reset nếu có lỗi sớm
+        return;
       }
-    });
-    // lấy dữ liệu mà bookTable trả về in ra console
-    this.tableService.bookTable(table.tableId, Number(userId)).subscribe({
-  next: (response) => {
-    console.log('Booking response:', response);
 
-    // Set orderTableId trước
-    this.currentOrderId.set(response);
-    console.log('Current Order ID set to:', this.currentOrderId()); // Debug
+      // 6. Lưu Order ID và gọi API gửi OTP
+      this.currentOrderId.set(orderId);
+      console.log('Current Order ID for OTP processing set to:', this.currentOrderId());
 
-    // Gửi OTP
+      this.otpService.sendOtp(orderId).subscribe({
+        next: (otpSendApiResponse) => {
+          console.log('OTP Send API Response:', otpSendApiResponse);
 
-  },
-  error: (error) => {
-    console.error('Booking error:', error);
-    alert('Lỗi đặt bàn: ' + error.message);
+          // 7. Lưu trữ response gửi OTP vào localStorage
+          try {
+          } catch (e) {
+            console.warn('Could not save OTP send response to localStorage:', e);
+          }
+
+          // 8. Mở popup OTP và hiển thị thông báo
+          this.showOtpModal.set(true);
+          const popupInstance = this.otpPopupRef(); // Giả định bạn có viewChild tên là otpPopupRef
+          if (popupInstance) {
+            popupInstance.resetInternalState(); // Reset trạng thái của popup (input, messages, cooldown)
+            popupInstance.showSuccess(otpSendApiResponse.message || 'Mã OTP đã được gửi. Vui lòng kiểm tra email.');
+          } else {
+            console.error('OTP Popup reference (otpPopupRef) is not available. Cannot show success message.');
+            // Thông báo cho người dùng rằng có lỗi giao diện, họ có thể cần F5 hoặc thử lại
+            alert('Giao diện OTP gặp lỗi. Nếu bạn không thấy popup, vui lòng thử lại sau ít phút hoặc tải lại trang.');
+          }
+        },
+        error: (otpSendError) => {
+          console.error('Error sending OTP via API:', otpSendError);
+          const errorMessage = otpSendError.error?.message || otpSendError.message || 'Không thể gửi mã OTP. Vui lòng thử lại sau.';
+          alert('Lỗi gửi OTP: ' + errorMessage);
+          this.currentOrderId.set(0); // Reset Order ID nếu gửi OTP thất bại
+        }
+      });
+    },
+    error: (bookingApiError) => {
+      console.error('Booking API Error:', bookingApiError);
+      const errorMessage = bookingApiError.error?.message || bookingApiError.message || 'Không thể hoàn tất việc đặt bàn. Vui lòng thử lại.';
+      alert('Đặt bàn không thành công: ' + errorMessage);
+      this.currentOrderId.set(0); // Reset Order ID nếu đặt bàn thất bại
+    }
+  });
+}
+
+
+ handleOtpPopupClose(): void {
+    console.log('OTP Popup close event received.');
+    this.showOtpModal.set(false); // Giả sử bạn có signal showOtpModal để điều khiển popup
+    this.currentOrderId.set(0); // Reset currentOrderId nếu cần
+    // Thêm logic khác nếu cần khi đóng popup
   }
-});
 
+// Giả sử đây là một phần của class TablesUserComponent
+// và bạn đã khai báo các signals/viewChild cần thiết:
+// otpPopupRef = viewChild<OtpPopupComponent>('otpPopupRef');
+// showOtpModal = signal(false);
+// currentOrderId = signal<number | null>(null); // Nên là number | null
+
+handleOtpVerifyAttempt(userEnteredOtp: string): void {
+  console.log('OTP Verify attempt event received with user-entered OTP:', userEnteredOtp);
+  const orderId = this.currentOrderId(); // Lấy orderId hiện tại từ signal
+  const popupInstance = this.otpPopupRef(); // Lấy tham chiếu đến instance của OtpPopupComponent
+
+  // 1. Kiểm tra xem tham chiếu đến popup có tồn tại không
+  if (!popupInstance) {
+    console.error('OTP Popup reference (otpPopupRef) is not available for verification.');
+    alert('Lỗi giao diện OTP. Vui lòng thử lại sau hoặc tải lại trang.');
+    return;
   }
 
-
-
-  onOtpClose() {
-    this.showOtpModal.set(false);
-    this.currentOrderId.set(0);
+  // 2. Kiểm tra xem orderId có tồn tại không
+  if (!orderId) {
+    popupInstance.showError('Lỗi hệ thống: Không tìm thấy ID đơn hàng để xác minh.');
+    console.error('OTP Verify: currentOrderId is null. Cannot proceed with OTP verification.');
+    return;
   }
 
-   onOtpSuccess() {
-    console.log('OTP verified successfully for order:', this.currentOrderId());
-    // Thực hiện logic đặt bàn thành công
-    // Có thể reload data hoặc navigate
-    this.loadTables();
+  // 3. Tạo key để lấy OTP từ localStorage
+  const localStorageKey = `${orderId}-otp`; // Ví dụ: "133-otp"
+
+  try {
+    const storedOtpDataString = localStorage.getItem(localStorageKey);
+
+    if (!storedOtpDataString) {
+      popupInstance.showError('Không tìm thấy thông tin OTP đã lưu. Vui lòng thử gửi lại OTP.');
+      console.warn(`No OTP data found in localStorage for key: ${localStorageKey}`);
+      return;
+    }
+
+
+    interface StoredOtpInfo {
+      code: string;
+      orderTableId: number;
+      expiresAt: number;
+    }
+
+    let storedOtpInfo: StoredOtpInfo;
+    try {
+      storedOtpInfo = JSON.parse(storedOtpDataString);
+    } catch (parseError) {
+      popupInstance.showError('Lỗi đọc dữ liệu OTP đã lưu. Vui lòng thử gửi lại OTP.');
+      console.error(`Error parsing OTP data from localStorage for key ${localStorageKey}:`, parseError);
+      localStorage.removeItem(localStorageKey); // Xóa dữ liệu không hợp lệ
+      return;
+    }
+
+    // 5. Kiểm tra tính hợp lệ của dữ liệu đã parse
+    if (!storedOtpInfo || typeof storedOtpInfo.code !== 'string' || typeof storedOtpInfo.expiresAt !== 'number') {
+        popupInstance.showError('Dữ liệu OTP đã lưu không hợp lệ. Vui lòng thử gửi lại OTP.');
+        console.error(`Invalid OTP data structure in localStorage for key ${localStorageKey}:`, storedOtpInfo);
+        localStorage.removeItem(localStorageKey); // Xóa dữ liệu không hợp lệ
+        return;
+    }
+
+    // 7. So sánh OTP người dùng nhập với OTP đã lưu
+    if (userEnteredOtp === storedOtpInfo.code) {
+      // === OTP KHỚP ===
+      console.log(`SUCCESS: User OTP (${userEnteredOtp}) matches stored OTP (${storedOtpInfo.code}) for order ID ${orderId}.`);
+      popupInstance.showSuccess('Xác minh OTP thành công!');
+      popupInstance.clearOtpInput();
+
+      // Xóa OTP đã sử dụng khỏi localStorage
+      localStorage.removeItem(localStorageKey);
+
+      // Đóng popup, reset currentOrderId và thực hiện hành động sau khi thành công
+      setTimeout(() => {
+        this.showOtpModal.set(false);
+        // xác minh thành công update trạng thái bàn từ đang trống thành đã được đặt
+        this.tableService.refreshTables(); // Gọi phương thức refresh từ service để cập nhật dữ liệu
+
+        this.tableService.updateTableStatus(this.currentOrderId(),'Đang trống', 'Đã đặt trước') .subscribe({
+              next: (updateResponse) => {
+                console.log('Table status updated successfully:', updateResponse);
+              },
+              error: (errorResponse) => {
+                console.error('Error updating table status:', errorResponse);
+              }
+        });
+
+      }, 1500);
+
+    } else {
+      // === OTP KHÔNG KHỚP ===
+      console.warn(`FAILURE: User OTP (${userEnteredOtp}) does NOT match stored OTP (${storedOtpInfo.code}) for order ID ${orderId}.`);
+      popupInstance.showError('Mã OTP không chính xác. Vui lòng thử lại.');
+      popupInstance.clearOtpInput();
+    }
+
+  } catch (error) {
+    // Lỗi chung khi thao tác với localStorage hoặc các lỗi không lường trước
+    console.error('An unexpected error occurred during OTP verification from localStorage:', error);
+    popupInstance.showError('Đã xảy ra lỗi không mong muốn. Vui lòng thử lại.');
   }
+}
+
+  handleOtpResendAttempt(): void {}
 
   private loadTables() {
     this.isLoading.set(true);
