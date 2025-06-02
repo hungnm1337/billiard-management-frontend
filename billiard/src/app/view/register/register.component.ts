@@ -21,8 +21,8 @@ export class RegisterComponent {
       ]],
       username: ['', [
         Validators.required,
-        Validators.minLength(7),
-        Validators.pattern('^[a-zA-Z0-9]+$')
+        Validators.minLength(7)
+
       ]],
       password: ['', [
         Validators.required,

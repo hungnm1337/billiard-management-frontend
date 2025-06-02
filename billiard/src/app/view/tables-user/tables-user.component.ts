@@ -1,12 +1,14 @@
-import { Component, OnInit, computed, signal, inject, DestroyRef } from '@angular/core';
+import { Component, OnInit, computed, signal, inject, DestroyRef, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { debounceTime, distinctUntilChanged, startWith } from 'rxjs/operators';
-
+import { AuthService } from '../../services/auth/auth.service';
 import { TableService } from '../../services/table/table.service';
 import { Table, TableStatus } from '../../interface/table.interface';
 import { HeaderComponent } from "../header/header.component";
+import { routes } from '../../app.routes';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-tables-user',
@@ -16,11 +18,14 @@ import { HeaderComponent } from "../header/header.component";
   styleUrl: './tables-user.component.scss'
 })
 export class TablesUserComponent implements OnInit {
-private tableService = inject(TableService);
-private destroyRef = inject(DestroyRef);
 
- allTables = signal<Table[]>([]);
-
+  showOtpModal = signal(false);
+  currentOrderId = signal(0);
+  allTables = signal<Table[]>([]);
+  isLoading = signal(false);
+  private tableService = inject(TableService);
+  private destroyRef = inject(DestroyRef);
+  // filteredAndSortedTables is defined later with full filtering and sorting logic.
   loading = signal<boolean>(false);
   error = signal<string | null>(null);
   selectedTable = signal<Table | null>(null);
@@ -50,7 +55,7 @@ private destroyRef = inject(DestroyRef);
     { value: 'price', label: 'Giá tiền' },
     { value: 'status', label: 'Trạng thái' }
   ];
-
+constructor(private router: Router, private authService: AuthService) {}
    // CLIENT-SIDE FILTERING & SORTING
   filteredAndSortedTables = computed(() => {
     let tables = [...this.allTables()]; // Clone để không ảnh hưởng dữ liệu gốc
@@ -73,6 +78,7 @@ private destroyRef = inject(DestroyRef);
     if (status !== 'all') {
       tables = tables.filter(table => table.status === status);
     }
+
 
     // 3. SORTING (Client-side)
     const sortBy = this.sortBy();
@@ -130,6 +136,7 @@ private destroyRef = inject(DestroyRef);
   );
 
   ngOnInit(): void {
+     this.loadTables();
     this.setupFormControls();
     this.subscribeToService();
   }
@@ -181,8 +188,8 @@ private destroyRef = inject(DestroyRef);
     this.tableService.tables$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(tables => {
-         console.log('📊 Tables received:', tables); // DEBUG
-        console.log('📊 Tables count:', tables.length); // DEBUG
+         console.log(' Tables received:', tables);
+        console.log('Tables count:', tables.length);
         this.allTables.set(tables);
         this.lastUpdateTime.set(new Date());
       });
@@ -302,14 +309,69 @@ private destroyRef = inject(DestroyRef);
   }
 
   // Booking action
-  bookTable(table: Table): void {
-    if (table.status === TableStatus.AVAILABLE) {
-      console.log('Booking table:', table);
-      alert(`Đặt bàn ${table.tableName} thành công!`);
+  bookTable(table: Table) {
+     if (table.status === TableStatus.AVAILABLE) {
+      console.log('Booking table:', table.tableId);
     }
+
+    // lấy userid từ localhost
+    const userId = this.authService.getUserId();
+    if (!userId) {
+      console.error('User ID not found in local storage');
+      return;
+    }else{
+      console.log('User ID:', userId);
+    }
+    // Gọi service để đặt bàn
+    this.tableService.bookTable(table.tableId, Number(userId)).subscribe({
+      next: (response) => {
+        if (response.success) {
+          alert(`Đặt bàn ${table.tableName} thành công!`);
+        }
+      },
+      error: (error) => {
+        alert('Lỗi đặt bàn: ' + error.message);
+      }
+    });
+    // lấy dữ liệu mà bookTable trả về in ra console
+    this.tableService.bookTable(table.tableId, Number(userId)).subscribe({
+  next: (response) => {
+    console.log('Booking response:', response);
+
+    // Set orderTableId trước
+    this.currentOrderId.set(response);
+    console.log('Current Order ID set to:', this.currentOrderId()); // Debug
+
+    // Gửi OTP
+
+  },
+  error: (error) => {
+    console.error('Booking error:', error);
+    alert('Lỗi đặt bàn: ' + error.message);
+  }
+});
+
   }
 
-  // Advanced search methods
+
+
+  onOtpClose() {
+    this.showOtpModal.set(false);
+    this.currentOrderId.set(0);
+  }
+
+   onOtpSuccess() {
+    console.log('OTP verified successfully for order:', this.currentOrderId());
+    // Thực hiện logic đặt bàn thành công
+    // Có thể reload data hoặc navigate
+    this.loadTables();
+  }
+
+  private loadTables() {
+    this.isLoading.set(true);
+    // Your existing table loading logic
+  }
+
   searchByPriceRange(min: number, max: number): void {
     // Client-side filter by price range
     // Có thể implement thêm nếu cần

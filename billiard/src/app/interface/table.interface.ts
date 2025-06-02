@@ -20,3 +20,32 @@ export enum TableStatus {
   MAINTENANCE = 'Đang bảo trì',
   RESERVED = 'Đã đặt trước'
 }
+
+export interface BookingTableModel {
+  tableId: number;
+  userId: number;
+  time?: Date; // Thêm time
+}
+
+
+export interface ChangeStatusTableRequest {
+  tableId: number;
+  oldStatus: string;
+  newStatus: string;
+}
+
+export interface VerifyOtpRequest {
+  orderID: string;   // camelCase - đúng với API
+  otpCode: string;   // camelCase - đúng với API
+}
+
+export interface SendOtpRequest {
+  orderTableId: number;  // camelCase
+}
+
+export interface OtpResponse {
+  success?: boolean;
+  message?: string;
+  data?: any;
+}
+

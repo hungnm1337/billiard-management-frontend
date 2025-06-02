@@ -2,6 +2,9 @@
 <app-header></app-header>
 <div class="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-emerald-50 p-6">
   <div class="max-w-7xl mx-auto">
+<!-- Existing table content -->
+
+<!-- OTP Modal -->
 
     <!-- Header -->
     <div class="mb-8">
@@ -187,9 +190,15 @@
             class="flex-1 px-4 py-3 text-white rounded-lg transition-colors flex items-center justify-center font-medium"
             [title]="sortOrder() === 'asc' ? 'Đang sắp xếp tăng dần' : 'Đang sắp xếp giảm dần'">
             @if (sortOrder() === 'asc') {
-              <i class="fas fa-sort-amount-up"><img src="https://cdn-icons-png.flaticon.com/128/5610/5610930.png" loading="lazy" width="32" height="32"></i>
-            } @else {
-              <i class="fas fa-sort-amount-down"><img src="https://cdn-icons-png.flaticon.com/128/5974/5974734.png" loading="lazy" width="32" height="32"></i>
+                <button class="text-white bg-green-500  hover:bg-green-600 px-3 py-2 rounded transition-colors">
+                  <i class="fas fa-sort-amount-up mr-2"></i>
+                  Tăng dần
+                </button>            }
+                 @else {
+                <button class="text-white bg-red-500 hover:bg-red-600 px-3 py-2 rounded transition-colors">
+                  <i class="fas fa-sort-amount-up mr-2"></i>
+                  Giảm dần
+                </button>
             }
           </button>
 
@@ -401,6 +410,11 @@
               <i class="fas fa-calendar-plus mr-2"></i>
               Đặt bàn ngay
             </button>
+             <button
+                (click)="clearSelection()"
+                class="bg-gray-500 w-full mt-4 hover:bg-gray-600 text-white font-medium py-2 px-6 rounded-lg transition-colors">
+                Đóng
+              </button>
           } @else {
             <div class="text-center">
               <p class="text-gray-600 mb-3">Bàn hiện tại không khả dụng</p>

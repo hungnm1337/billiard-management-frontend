@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, BehaviorSubject, throwError, timer, EMPTY } from 'rxjs';
 import { catchError, retry, tap, switchMap, startWith } from 'rxjs/operators';
-import { Table } from '../../interface/table.interface';
+import { BookingTableModel, ChangeStatusTableRequest, Table } from '../../interface/table.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -25,6 +25,40 @@ export class TableService {
     this.startAutoRefresh();
   }
 
+  bookingTable(model: BookingTableModel): Observable<any> {
+    return this.http.post(`${this.API_URL}/booking`, model).pipe(
+      tap(() => {
+        this.refreshTables();
+      }),
+      catchError(error => this.handleError(error))
+    );
+  }
+
+   changeStatusTable(request: ChangeStatusTableRequest): Observable<any> {
+    return this.http.put(`${this.API_URL}/change-status`, request).pipe(
+      tap(() => {
+        this.refreshTables();
+      }),
+      catchError(error => this.handleError(error))
+    );
+  }
+
+   updateTableStatus(tableId: number, fromStatus: string, toStatus: string): Observable<any> {
+    const request: ChangeStatusTableRequest = {
+      tableId: tableId,
+      oldStatus: fromStatus,
+      newStatus: toStatus
+    };
+    return this.changeStatusTable(request);
+  }
+
+  bookTable(tableId: number, userId: number): Observable<any> {
+    const model: BookingTableModel = {
+      tableId: tableId,
+      userId: userId,
+    };
+    return this.bookingTable(model);
+  }
 
   private startAutoRefresh(): void {
     timer(0, this.REFRESH_INTERVAL)
