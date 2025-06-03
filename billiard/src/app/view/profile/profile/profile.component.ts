@@ -1,7 +1,10 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HeaderComponent } from "../../header/header.component";
-
+import { ProfileModel } from '../../../interface/profile.model';
+import { ProfileService } from '../../../services/profile/profile.service';
+import { AuthService } from '../../../services/auth/auth.service';
+import { Router } from '@angular/router';
 interface Account {
   username: string;
   password: string;
@@ -74,6 +77,9 @@ interface UserProfile {
   `]
 })
 export class UserProfileComponent implements OnInit {
+
+  constructor(private profileService : ProfileService, private authService : AuthService, private outer : Router){}
+
   profile = signal<UserProfile>({
     account: {
       username: 'john_doe',
@@ -98,7 +104,55 @@ export class UserProfileComponent implements OnInit {
   });
 
   ngOnInit() {
-    // Load profile data here
+    const userid = this.authService.getUserId()
+    if(userid == null){
+        this.outer.navigateByUrl('/login');
+    }
+    this.loadProfile(Number(userid));
+  }
+
+   loadProfile(userId: number) {
+
+    this.profileService.getProfile(userId).subscribe({
+      next: (apiData: ProfileModel) => {
+        const transformedProfile: UserProfile = {
+          account: {
+            username: apiData.username,
+            password: '********', // Không hiển thị password thật
+            status: this.translateStatus(apiData.status)
+          },
+          user: {
+            userId: apiData.userId,
+            name: apiData.name,
+            accountId: apiData.accountId,
+            roleId: apiData.roleId,
+            dob: apiData.dob
+          },
+          salary: {
+            userId: apiData.userId,
+            salary1: apiData.salary1
+          },
+          rewardPoint: {
+            userId: apiData.userId,
+            points: apiData.points
+          }
+        };
+
+        this.profile.set(transformedProfile);
+      },
+      error: (error) => {
+        console.error('Error loading profile:', error);
+      }
+    });
+  }
+
+   private translateStatus(status: string): string {
+    const statusMap: { [key: string]: string } = {
+      'ACTIVE': 'Hoạt động',
+      'INACTIVE': 'Không hoạt động',
+      'SUSPENDED': 'Tạm khóa'
+    };
+    return statusMap[status] || status;
   }
 
   getInitials(name: string): string {

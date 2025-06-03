@@ -55,7 +55,7 @@
             </div>
 
             <!-- Salary Information (if employee) -->
-            <div *ngIf="profile().salary" class="animate-slide-in-right" [style.animation-delay]="'0.4s'">
+            <div *ngIf="profile().salary && profile().salary?.salary1 !== 0 " class="animate-slide-in-right" [style.animation-delay]="'0.4s'">
               <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
                 <svg class="w-6 h-6 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
