@@ -1,534 +1,274 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản lý bàn billiard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .table-available {
-            background-color: #4ade80;
-            color: white;
-        }
-        .table-occupied {
-            background-color: #f87171;
-            color: white;
-        }
-        .table-reserved {
-            background-color: #fbbf24;
-            color: white;
-        }
-        .table-maintenance {
-            background-color: #94a3b8;
-            color: white;
-        }
 
-        .blink {
-            animation: blink 1s infinite;
-        }
+    <!-- Header -->
+    <div class="mb-8">
 
-        @keyframes blink {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
-        }
-
-        .modal {
-            transition: opacity 0.3s ease;
-        }
-    </style>
-</head>
-<body class="bg-gray-100 font-sans">
-    <div class="container mx-auto px-4 py-8">
-        <!-- Header -->
-        <header class="mb-8">
-            <h1 class="text-3xl font-bold text-center text-blue-800 mb-2">QUẢN LÝ BÀN BILLIARD</h1>
-            <div class="flex justify-between items-center bg-white p-4 rounded-lg shadow">
-                <div class="flex items-center space-x-4">
-                    <div class="bg-blue-100 p-2 rounded-full">
-                        <i class="fas fa-user text-blue-600 text-xl"></i>
-                    </div>
-                    <div>
-                        <p class="font-semibold">Xin chào, Quản lý</p>
-                        <p class="text-sm text-gray-500">Hôm nay: <span id="current-date"></span></p>
-                    </div>
-                </div>
-                <div class="flex space-x-2">
-                    <button id="add-table-btn" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center">
-                        <i class="fas fa-plus mr-2"></i> Thêm bàn
-                    </button>
-                    <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center">
-                        <i class="fas fa-chart-bar mr-2"></i> Thống kê
-                    </button>
-                </div>
+      <!-- Statistics Cards -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 mt-3">
+        <div class="bg-white/80 backdrop-blur-md rounded-lg p-4 border border-gray-200 shadow-sm">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-600 text-sm">Tổng số bàn</p>
+              <p class="text-2xl font-bold text-gray-900">{{ totalTables() }}</p>
             </div>
-        </header>
-
-        <!-- Status Legend -->
-        <div class="bg-white p-4 rounded-lg shadow mb-8">
-            <h2 class="text-xl font-semibold mb-4 text-gray-700">Trạng thái bàn</h2>
-            <div class="grid grid-cols-4 gap-4">
-                <div class="flex items-center">
-                    <div class="w-4 h-4 rounded-full bg-green-500 mr-2"></div>
-                    <span>Trống</span>
-                </div>
-                <div class="flex items-center">
-                    <div class="w-4 h-4 rounded-full bg-red-500 mr-2"></div>
-                    <span>Đang chơi</span>
-                </div>
-                <div class="flex items-center">
-                    <div class="w-4 h-4 rounded-full bg-yellow-500 mr-2"></div>
-                    <span>Đã đặt</span>
-                </div>
-                <div class="flex items-center">
-                    <div class="w-4 h-4 rounded-full bg-gray-500 mr-2"></div>
-                    <span>Bảo trì</span>
-                </div>
-            </div>
+            <i class="fas fa-table text-2xl text-blue-500"></i>
+          </div>
         </div>
 
-        <!-- Search and Filter -->
-        <div class="bg-white p-4 rounded-lg shadow mb-8">
-            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div class="relative flex-1">
-                    <input type="text" placeholder="Tìm kiếm bàn..." class="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
-                </div>
-                <div class="flex space-x-2">
-                    <select class="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option>Tất cả trạng thái</option>
-                        <option>Trống</option>
-                        <option>Đang chơi</option>
-                        <option>Đã đặt</option>
-                        <option>Bảo trì</option>
-                    </select>
-                    <select class="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option>Tất cả loại bàn</option>
-                        <option>Bàn thường</option>
-                        <option>Bàn VIP</option>
-                        <option>Bàn tournament</option>
-                    </select>
-                </div>
+        <div class="bg-white/80 backdrop-blur-md rounded-lg p-4 border border-gray-200 shadow-sm">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-600 text-sm">Bàn trống</p>
+              <p class="text-2xl font-bold text-green-600">{{ availableTables() }}</p>
             </div>
+            <i class="fas fa-check-circle text-2xl text-green-500"></i>
+          </div>
         </div>
 
-        <!-- Tables Grid -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-            <!-- Table cards will be generated by JavaScript -->
+        <div class="bg-white/80 backdrop-blur-md rounded-lg p-4 border border-gray-200 shadow-sm">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-600 text-sm">Đang sử dụng</p>
+              <p class="text-2xl font-bold text-red-600">{{ occupiedTables() }}</p>
+            </div>
+            <i class="fas fa-user-friends text-2xl text-red-500"></i>
+          </div>
         </div>
 
-        <!-- Statistics Bar -->
-        <div class="bg-white p-4 rounded-lg shadow mt-8">
-            <div class="grid grid-cols-4 gap-4 text-center">
-                <div class="border-r border-gray-200">
-                    <p class="text-gray-500">Tổng số bàn</p>
-                    <p class="text-2xl font-bold" id="total-tables">0</p>
-                </div>
-                <div class="border-r border-gray-200">
-                    <p class="text-gray-500">Bàn trống</p>
-                    <p class="text-2xl font-bold text-green-500" id="available-tables">0</p>
-                </div>
-                <div class="border-r border-gray-200">
-                    <p class="text-gray-500">Bàn đang chơi</p>
-                    <p class="text-2xl font-bold text-red-500" id="occupied-tables">0</p>
-                </div>
-                <div>
-                    <p class="text-gray-500">Doanh thu hôm nay</p>
-                    <p class="text-2xl font-bold text-blue-500" id="today-revenue">0 đ</p>
-                </div>
+        <div class="bg-white/80 backdrop-blur-md rounded-lg p-4 border border-gray-200 shadow-sm">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-600 text-sm">Bảo trì</p>
+              <p class="text-2xl font-bold text-yellow-600">{{ maintenanceTables() }}</p>
             </div>
+            <i class="fas fa-tools text-2xl text-yellow-500"></i>
+          </div>
         </div>
+      </div>
     </div>
 
-    <!-- Add Table Modal -->
-    <div id="add-table-modal" class="modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-md">
-            <div class="flex justify-between items-center border-b p-4">
-                <h3 class="text-xl font-semibold">Thêm bàn mới</h3>
-                <button id="close-modal" class="text-gray-500 hover:text-gray-700">
-                    <i class="fas fa-times"></i>
+    <!-- Error Message -->
+    @if (error()) {
+      <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 flex items-center justify-between">
+        <div class="flex items-center">
+          <i class="fas fa-exclamation-triangle text-red-500 mr-3"></i>
+          <span class="text-red-800">{{ error() }}</span>
+        </div>
+        <button
+          (click)="clearError()"
+          class="text-red-500 hover:text-red-700 transition-colors">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    }
+
+    <!-- Loading State (Initial Load) -->
+    @if (loading() && totalTables() === 0) {
+      <div class="text-center py-16">
+        <div class="inline-flex flex-col items-center space-y-4">
+          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
+          <div class="text-gray-700">
+            <p class="text-lg font-medium">Đang tải dữ liệu bàn...</p>
+            <p class="text-sm text-gray-600">Vui lòng đợi trong giây lát</p>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Table Grid -->
+    @if (filteredAndSortedTables().length > 0) {
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3  gap-6">
+        @for (table of filteredAndSortedTables(); track table.tableId) {
+          <div
+            class="bg-white/90 backdrop-blur-md rounded-xl p-6 border border-gray-200 hover:border-emerald-400 hover:shadow-lg transition-all duration-300 cursor-pointer transform hover:scale-105"
+            [class.ring-2]="selectedTable()?.tableId === table.tableId"
+            [class.ring-emerald-500]="selectedTable()?.tableId === table.tableId"
+            [class.shadow-md]="selectedTable()?.tableId === table.tableId"
+            (click)="selectTable(table)">
+
+            <!-- Table Header -->
+            <div class="flex items-start justify-between mb-4">
+              <div>
+                <h3 class="text-xl font-bold text-gray-900 mb-1">{{ table.tableName }}</h3>
+                <p class="text-gray-600 text-sm">ID: #{{ table.tableId }}</p>
+              </div>
+              <div class="text-right">
+                <span [class]="'px-3 py-1 rounded-full text-xs font-medium flex items-center ' + getStatusColor(table.status)">
+                  <i [class]="getStatusIcon(table.status) + ' mr-1'"></i>
+                  {{ table.status }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Table Info -->
+            <div class="space-y-3 mb-4">
+              <div class="flex items-center justify-between text-gray-700">
+                <div class="flex items-center">
+                  <i class="fas fa-money-bill-wave w-5 text-emerald-600"></i>
+                  <span class="ml-2">Giá thuê:</span>
+                </div>
+                <span class="text-emerald-600 font-bold">{{ formatPrice(table.hourlyRate) }}/giờ</span>
+              </div>
+
+              <!-- Additional Info based on status -->
+              @if (table.status === 'Đang sử dụng') {
+                <div class="flex items-center text-red-600 text-sm">
+                  <i class="fas fa-clock w-4"></i>
+                  <span class="ml-2">Đang có khách</span>
+                </div>
+              } @else if (table.status === 'Đang bảo trì') {
+                <div class="flex items-center text-yellow-600 text-sm">
+                  <i class="fas fa-wrench w-4"></i>
+                  <span class="ml-2">Đang bảo trì</span>
+                </div>
+              } @else if (table.status === 'Đã đặt trước') {
+                <div class="flex items-center text-blue-600 text-sm">
+                  <i class="fas fa-calendar-check w-4"></i>
+                  <span class="ml-2">Đã có lịch đặt</span>
+                </div>
+              }
+            </div>
+
+            <!-- Action Button -->
+            <div class="mt-4">
+              @if (table.status === 'Đang trống') {
+                <button
+                  (click)="InverTable(table); $event.stopPropagation()"
+                  class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center">
+                  <i class="fas fa-calendar-plus mr-2"></i>
+                  Mở bàn
                 </button>
-            </div>
-            <div class="p-6">
-                <form id="add-table-form">
-                    <div class="mb-4">
-                        <label class="block text-gray-700 mb-2">Tên bàn</label>
-                        <input type="text" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-gray-700 mb-2">Loại bàn</label>
-                        <select class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-                            <option value="standard">Bàn thường</option>
-                            <option value="vip">Bàn VIP</option>
-                            <option value="tournament">Bàn tournament</option>
-                        </select>
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-gray-700 mb-2">Giá theo giờ</label>
-                        <input type="number" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-                    </div>
-                    <div class="flex justify-end space-x-3 mt-6">
-                        <button type="button" id="cancel-add" class="px-4 py-2 border rounded-lg hover:bg-gray-100">Hủy</button>
-                        <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">Thêm</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- Table Detail Modal -->
-    <div id="table-detail-modal" class="modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-md">
-            <div class="flex justify-between items-center border-b p-4">
-                <h3 class="text-xl font-semibold">Chi tiết bàn <span id="detail-table-name"></span></h3>
-                <button id="close-detail-modal" class="text-gray-500 hover:text-gray-700">
-                    <i class="fas fa-times"></i>
+              } @else if (table.status === 'Đang sử dụng') {
+                <button
+                  disabled
+                  class="w-full bg-red-400 opacity-60 cursor-not-allowed text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center">
+                  <i class="fas fa-ban mr-2"></i>
+                 Đóng bàn
                 </button>
+              } @else if (table.status === 'Đang bảo trì') {
+                <button
+                  disabled
+                  class="w-full bg-gray-400 opacity-60 cursor-not-allowed text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center">
+                  <i class="fas fa-ban mr-2"></i>
+                  Bảo trì
+                </button>
+              } @else {
+                <button
+                  (click)="InverTable(table); $event.stopPropagation()"
+                  class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center">
+                  <i class="fas fa-calendar-check mr-2"></i>
+                  Mở bàn
+                </button>
+              }
             </div>
-            <div class="p-6">
-                <div class="mb-4">
-                    <p class="font-semibold">Trạng thái:</p>
-                    <p id="detail-table-status" class="inline-block px-3 py-1 rounded-full text-white"></p>
-                </div>
-                <div class="mb-4">
-                    <p class="font-semibold">Loại bàn:</p>
-                    <p id="detail-table-type"></p>
-                </div>
-                <div class="mb-4">
-                    <p class="font-semibold">Giá theo giờ:</p>
-                    <p id="detail-table-price"></p>
-                </div>
-                <div class="mb-4 hidden" id="customer-info">
-                    <p class="font-semibold">Khách hàng:</p>
-                    <p id="detail-customer-name"></p>
-                    <p id="detail-start-time"></p>
-                    <p id="detail-duration"></p>
-                </div>
-                <div class="flex flex-wrap gap-2 mt-6">
-                    <button id="start-session-btn" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg hidden">
-                        <i class="fas fa-play mr-2"></i> Bắt đầu
-                    </button>
-                    <button id="end-session-btn" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg hidden">
-                        <i class="fas fa-stop mr-2"></i> Kết thúc
-                    </button>
-                    <button id="reserve-table-btn" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg hidden">
-                        <i class="fas fa-calendar-check mr-2"></i> Đặt trước
-                    </button>
-                    <button id="maintenance-btn" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg hidden">
-                        <i class="fas fa-tools mr-2"></i> Bảo trì
-                    </button>
-                    <button id="edit-table-btn" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
-                        <i class="fas fa-edit mr-2"></i> Chỉnh sửa
-                    </button>
-                    <button id="delete-table-btn" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg">
-                        <i class="fas fa-trash mr-2"></i> Xóa
-                    </button>
-                </div>
-            </div>
+          </div>
+        }
+      </div>
+    } @else if (!loading()) {
+      <!-- Empty State -->
+      <div class="text-center py-16">
+        <div class="text-6xl text-gray-400 mb-6">
+          @if (hasActiveFilters()) {
+            <i class="fas fa-search"></i>
+          } @else {
+            <i class="fas fa-table"></i>
+          }
         </div>
-    </div>
 
-    <script>
-        // Sample data for pool tables
-        const tables = [
-            { id: 1, name: "Bàn 1", type: "standard", price: 100000, status: "available", customer: null, startTime: null },
-            { id: 2, name: "Bàn 2", type: "standard", price: 100000, status: "occupied", customer: "Nguyễn Văn A", startTime: new Date(Date.now() - 30*60000) },
-            { id: 3, name: "Bàn 3", type: "vip", price: 150000, status: "reserved", customer: "Trần Thị B", startTime: new Date(Date.now() + 60*60000) },
-            { id: 4, name: "Bàn 4", type: "standard", price: 100000, status: "available", customer: null, startTime: null },
-            { id: 5, name: "Bàn 5", type: "tournament", price: 200000, status: "maintenance", customer: null, startTime: null },
-            { id: 6, name: "Bàn 6", type: "vip", price: 150000, status: "occupied", customer: "Lê Văn C", startTime: new Date(Date.now() - 90*60000) },
-            { id: 7, name: "Bàn 7", type: "standard", price: 100000, status: "available", customer: null, startTime: null },
-            { id: 8, name: "Bàn 8", type: "standard", price: 100000, status: "available", customer: null, startTime: null },
-        ];
-
-        // DOM elements
-        const tablesContainer = document.querySelector('.grid');
-        const addTableBtn = document.getElementById('add-table-btn');
-        const addTableModal = document.getElementById('add-table-modal');
-        const closeModal = document.getElementById('close-modal');
-        const cancelAdd = document.getElementById('cancel-add');
-        const tableDetailModal = document.getElementById('table-detail-modal');
-        const closeDetailModal = document.getElementById('close-detail-modal');
-        const currentDateElement = document.getElementById('current-date');
-        const totalTablesElement = document.getElementById('total-tables');
-        const availableTablesElement = document.getElementById('available-tables');
-        const occupiedTablesElement = document.getElementById('occupied-tables');
-        const todayRevenueElement = document.getElementById('today-revenue');
-
-        // Current date
-        const now = new Date();
-        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        currentDateElement.textContent = now.toLocaleDateString('vi-VN', options);
-
-        // Render tables
-        function renderTables() {
-            tablesContainer.innerHTML = '';
-
-            let availableCount = 0;
-            let occupiedCount = 0;
-            let revenue = 0;
-
-            tables.forEach(table => {
-                const tableElement = document.createElement('div');
-                tableElement.className = 'bg-white rounded-lg shadow overflow-hidden cursor-pointer transform hover:scale-105 transition-transform duration-200';
-                tableElement.dataset.id = table.id;
-
-                let statusClass = '';
-                let statusText = '';
-                let icon = '';
-
-                switch(table.status) {
-                    case 'available':
-                        statusClass = 'table-available';
-                        statusText = 'Trống';
-                        icon = 'fa-circle-check';
-                        availableCount++;
-                        break;
-                    case 'occupied':
-                        statusClass = 'table-occupied blink';
-                        statusText = 'Đang chơi';
-                        icon = 'fa-clock';
-                        occupiedCount++;
-
-                        // Calculate revenue (assuming 100,000 VND per hour)
-                        const durationHours = (new Date() - table.startTime) / (1000 * 60 * 60);
-                        revenue += Math.ceil(durationHours) * table.price;
-                        break;
-                    case 'reserved':
-                        statusClass = 'table-reserved';
-                        statusText = 'Đã đặt';
-                        icon = 'fa-calendar';
-                        break;
-                    case 'maintenance':
-                        statusClass = 'table-maintenance';
-                        statusText = 'Bảo trì';
-                        icon = 'fa-tools';
-                        break;
-                }
-
-                tableElement.innerHTML = `
-                    <div class="p-4 ${statusClass}">
-                        <div class="flex justify-between items-center">
-                            <h3 class="text-xl font-bold">${table.name}</h3>
-                            <i class="fas ${icon} text-xl"></i>
-                        </div>
-                        <p class="text-sm mt-1">${statusText}</p>
-                    </div>
-                    <div class="p-4">
-                        <div class="flex justify-between mb-2">
-                            <span class="text-gray-500">Loại:</span>
-                            <span class="font-medium">${getTableTypeName(table.type)}</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-gray-500">Giá:</span>
-                            <span class="font-medium">${table.price.toLocaleString('vi-VN')} đ/giờ</span>
-                        </div>
-                    </div>
-                `;
-
-                tableElement.addEventListener('click', () => showTableDetail(table.id));
-                tablesContainer.appendChild(tableElement);
-            });
-
-            // Update statistics
-            totalTablesElement.textContent = tables.length;
-            availableTablesElement.textContent = availableCount;
-            occupiedTablesElement.textContent = occupiedCount;
-            todayRevenueElement.textContent = revenue.toLocaleString('vi-VN') + ' đ';
+        @if (hasActiveFilters()) {
+          <h3 class="text-xl font-medium text-gray-800 mb-2">Không tìm thấy bàn phù hợp</h3>
+          <p class="text-gray-600 mb-6">Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm</p>
+          <div class="space-y-2">
+            <button
+              (click)="resetFilters()"
+              class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 px-6 rounded-lg transition-colors mx-2">
+              <i class="fas fa-eraser mr-2"></i>
+              Xóa bộ lọc
+            </button>
+            <button
+              (click)="refreshData()"
+              class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors mx-2">
+              <i class="fas fa-sync-alt mr-2"></i>
+              Làm mới dữ liệu
+            </button>
+          </div>
+        } @else if (totalTables() === 0) {
+          <h3 class="text-xl font-medium text-gray-800 mb-2">Chưa có dữ liệu bàn</h3>
+          <p class="text-gray-600 mb-6">Hệ thống chưa có thông tin về các bàn billiard</p>
+          <button
+            (click)="refreshData()"
+            class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 px-6 rounded-lg transition-colors">
+            <i class="fas fa-sync-alt mr-2"></i>
+            Tải lại dữ liệu
+          </button>
+        } @else {
+          <h3 class="text-xl font-medium text-gray-800 mb-2">Có lỗi hiển thị</h3>
+          <p class="text-gray-600 mb-6">Đã có dữ liệu nhưng không thể hiển thị</p>
+          <button
+            (click)="refreshData()"
+            class="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-6 rounded-lg transition-colors">
+            <i class="fas fa-bug mr-2"></i>
+            Debug & Reload
+          </button>
         }
+      </div>
+    }
 
-        function getTableTypeName(type) {
-            switch(type) {
-                case 'standard': return 'Bàn thường';
-                case 'vip': return 'Bàn VIP';
-                case 'tournament': return 'Bàn tournament';
-                default: return type;
-            }
-        }
+    <!-- Selected Table Modal -->
+    @if (selectedTable()) {
+      <div class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white/95 backdrop-blur-md rounded-2xl p-8 max-w-md w-full border border-gray-200 shadow-xl animate-in fade-in duration-200">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-2xl font-bold text-gray-900">Chi tiết bàn</h3>
+            <button
+              (click)="clearSelection()"
+              class="text-gray-500 hover:text-gray-700 transition-colors">
+              <i class="fas fa-times text-xl"></i>
+            </button>
+          </div>
 
-        function getStatusName(status) {
-            switch(status) {
-                case 'available': return 'Trống';
-                case 'occupied': return 'Đang chơi';
-                case 'reserved': return 'Đã đặt';
-                case 'maintenance': return 'Bảo trì';
-                default: return status;
-            }
-        }
+          <div class="space-y-4 mb-6">
+            <div class="flex justify-between items-center">
+              <span class="text-gray-700">Tên bàn:</span>
+              <span class="text-gray-900 font-medium">{{ selectedTable()!.tableName }}</span>
+            </div>
 
-        function getStatusClass(status) {
-            switch(status) {
-                case 'available': return 'bg-green-500';
-                case 'occupied': return 'bg-red-500';
-                case 'reserved': return 'bg-yellow-500';
-                case 'maintenance': return 'bg-gray-500';
-                default: return 'bg-blue-500';
-            }
-        }
+            <div class="flex justify-between items-center">
+              <span class="text-gray-700">ID:</span>
+              <span class="text-gray-900 font-mono">#{{ selectedTable()!.tableId }}</span>
+            </div>
 
-        function showTableDetail(tableId) {
-            const table = tables.find(t => t.id === tableId);
-            if (!table) return;
+            <div class="flex justify-between items-center">
+              <span class="text-gray-700">Trạng thái:</span>
+              <span [class]="'px-3 py-1 rounded-full text-xs font-medium ' + getStatusColor(selectedTable()!.status)">
+                <i [class]="getStatusIcon(selectedTable()!.status) + ' mr-1'"></i>
+                {{ selectedTable()!.status }}
+              </span>
+            </div>
 
-            // Set modal content
-            document.getElementById('detail-table-name').textContent = table.name;
-            document.getElementById('detail-table-type').textContent = getTableTypeName(table.type);
-            document.getElementById('detail-table-price').textContent = table.price.toLocaleString('vi-VN') + ' đ/giờ';
+            <div class="flex justify-between items-center">
+              <span class="text-gray-700">Giá thuê:</span>
+              <span class="text-emerald-600 font-bold text-lg">{{ formatPrice(selectedTable()!.hourlyRate) }}/giờ</span>
+            </div>
+          </div>
 
-            const statusElement = document.getElementById('detail-table-status');
-            statusElement.textContent = getStatusName(table.status);
-            statusElement.className = `inline-block px-3 py-1 rounded-full text-white ${getStatusClass(table.status)}`;
+          @if (selectedTable()!.status === 'Đang trống') {
 
-            const customerInfo = document.getElementById('customer-info');
-            const startSessionBtn = document.getElementById('start-session-btn');
-            const endSessionBtn = document.getElementById('end-session-btn');
-            const reserveBtn = document.getElementById('reserve-table-btn');
-            const maintenanceBtn = document.getElementById('maintenance-btn');
+             <button
+                (click)="clearSelection()"
+                class="bg-gray-500 w-full mt-4 hover:bg-gray-600 text-white font-medium py-2 px-6 rounded-lg transition-colors">
+                Đóng
+              </button>
+          } @else {
+            <div class="text-center">
+              <p class="text-gray-600 mb-3">Bàn hiện tại không khả dụng</p>
+              <button
+                (click)="clearSelection()"
+                class="bg-gray-500 hover:bg-gray-600 text-white font-medium py-2 px-6 rounded-lg transition-colors">
+                Đóng
+              </button>
+            </div>
+          }
+        </div>
+      </div>
+    }
 
-            // Reset buttons
-            startSessionBtn.classList.add('hidden');
-            endSessionBtn.classList.add('hidden');
-            reserveBtn.classList.add('hidden');
-            maintenanceBtn.classList.add('hidden');
-
-            if (table.status === 'available') {
-                startSessionBtn.classList.remove('hidden');
-                reserveBtn.classList.remove('hidden');
-                maintenanceBtn.classList.remove('hidden');
-                customerInfo.classList.add('hidden');
-            }
-            else if (table.status === 'occupied') {
-                endSessionBtn.classList.remove('hidden');
-                customerInfo.classList.remove('hidden');
-                document.getElementById('detail-customer-name').textContent = table.customer;
-                document.getElementById('detail-start-time').textContent = 'Bắt đầu: ' + table.startTime.toLocaleTimeString('vi-VN');
-
-                const duration = Math.floor((new Date() - table.startTime) / 60000);
-                document.getElementById('detail-duration').textContent = `Đã chơi: ${Math.floor(duration/60)}h${duration%60}p`;
-            }
-            else if (table.status === 'reserved') {
-                customerInfo.classList.remove('hidden');
-                document.getElementById('detail-customer-name').textContent = table.customer;
-                document.getElementById('detail-start-time').textContent = 'Thời gian đặt: ' + table.startTime.toLocaleString('vi-VN');
-                document.getElementById('detail-duration').textContent = '';
-            }
-            else if (table.status === 'maintenance') {
-                maintenanceBtn.classList.remove('hidden');
-                customerInfo.classList.add('hidden');
-            }
-
-            // Show modal
-            tableDetailModal.classList.remove('hidden');
-        }
-
-        // Event listeners
-        addTableBtn.addEventListener('click', () => {
-            addTableModal.classList.remove('hidden');
-        });
-
-        closeModal.addEventListener('click', () => {
-            addTableModal.classList.add('hidden');
-        });
-
-        cancelAdd.addEventListener('click', () => {
-            addTableModal.classList.add('hidden');
-        });
-
-        closeDetailModal.addEventListener('click', () => {
-            tableDetailModal.classList.add('hidden');
-        });
-
-        document.getElementById('add-table-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-
-            // In a real app, you would get values from the form
-            const newTable = {
-                id: tables.length + 1,
-                name: `Bàn ${tables.length + 1}`,
-                type: "standard",
-                price: 100000,
-                status: "available",
-                customer: null,
-                startTime: null
-            };
-
-            tables.push(newTable);
-            renderTables();
-            addTableModal.classList.add('hidden');
-        });
-
-        document.getElementById('start-session-btn').addEventListener('click', () => {
-            const tableId = parseInt(tableDetailModal.querySelector('.modal').dataset.id);
-            const table = tables.find(t => t.id === tableId);
-
-            if (table) {
-                table.status = 'occupied';
-                table.customer = "Khách mới"; // In real app, you would get customer name
-                table.startTime = new Date();
-                renderTables();
-                tableDetailModal.classList.add('hidden');
-            }
-        });
-
-        document.getElementById('end-session-btn').addEventListener('click', () => {
-            const tableId = parseInt(tableDetailModal.querySelector('.modal').dataset.id);
-            const table = tables.find(t => t.id === tableId);
-
-            if (table) {
-                table.status = 'available';
-                table.customer = null;
-                table.startTime = null;
-                renderTables();
-                tableDetailModal.classList.add('hidden');
-            }
-        });
-
-        document.getElementById('reserve-table-btn').addEventListener('click', () => {
-            const tableId = parseInt(tableDetailModal.querySelector('.modal').dataset.id);
-            const table = tables.find(t => t.id === tableId);
-
-            if (table) {
-                table.status = 'reserved';
-                table.customer = "Khách đặt trước"; // In real app, you would get customer name
-                table.startTime = new Date(Date.now() + 60*60000); // 1 hour from now
-                renderTables();
-                tableDetailModal.classList.add('hidden');
-            }
-        });
-
-        document.getElementById('maintenance-btn').addEventListener('click', () => {
-            const tableId = parseInt(tableDetailModal.querySelector('.modal').dataset.id);
-            const table = tables.find(t => t.id === tableId);
-
-            if (table) {
-                if (table.status === 'maintenance') {
-                    table.status = 'available';
-                } else {
-                    table.status = 'maintenance';
-                }
-                table.customer = null;
-                table.startTime = null;
-                renderTables();
-                tableDetailModal.classList.add('hidden');
-            }
-        });
-
-        document.getElementById('delete-table-btn').addEventListener('click', () => {
-            const tableId = parseInt(tableDetailModal.querySelector('.modal').dataset.id);
-            const index = tables.findIndex(t => t.id === tableId);
-
-            if (index !== -1) {
-                if (confirm(`Bạn có chắc muốn xóa ${tables[index].name}?`)) {
-                    tables.splice(index, 1);
-                    renderTables();
-                    tableDetailModal.classList.add('hidden');
-                }
-            }
-        });
-
-        // Initial render
-        renderTables();
-    </script>
-</body>
-</html>

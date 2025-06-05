@@ -1,0 +1,25 @@
+<!-- salary-list.component.html -->
+<div class="p-6 bg-gray-50 min-h-screen">
+  <h2 class="text-2xl font-bold mb-6 text-gray-800">Bảng lương nhân viên</h2>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    @for (s of salaries; track s.id) {
+      <div [class]="'border-l-4 rounded-lg shadow p-6 flex items-center ' + getSalaryClass(s.salary1)">
+        <div class="flex-shrink-0 w-12 h-12 rounded-full bg-blue-200 flex items-center justify-center text-xl font-bold text-blue-700 mr-4">
+          {{ s.user.name[0] }}
+        </div>
+        <div class="flex-1">
+          <div class="flex items-center gap-2">
+            <span class="font-semibold text-lg">{{ s.user.name }}</span>
+            @if (getSalaryLabel(s.salary1)) {
+              <span [class]="'ml-2 px-2 py-1 rounded text-xs font-bold uppercase ' + (s.salary1 === minSalary() ? 'bg-red-200 text-red-800' : 'bg-green-200 text-green-800')">
+                {{ getSalaryLabel(s.salary1) }}
+              </span>
+            }
+          </div>
+          <div class="text-gray-600 mt-1">Lương: <span class="font-bold text-xl">{{ s.salary1 | number }}đ</span></div>
+        </div>
+      </div>
+    }
+  </div>
+</div>

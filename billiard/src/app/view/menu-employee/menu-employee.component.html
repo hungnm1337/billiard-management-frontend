@@ -1,0 +1,32 @@
+<!-- menu-employee.component.html -->
+<div class="h-full bg-white shadow-lg">
+  <!-- Header của menu -->
+  <div class="p-6 border-b border-gray-200">
+    <h2 class="text-xl font-bold text-gray-800">Menu Nhân Viên</h2>
+    <p class="text-sm text-gray-600 mt-1">Chọn chức năng</p>
+  </div>
+
+  <!-- Danh sách menu -->
+  <nav class="mt-4 px-2">
+    @for (item of menuItems; track item.id) {
+      <button
+        (click)="selectMenu(item.id)"
+       [class]="'w-full flex items-center px-4 py-3 mb-2 text-left rounded-lg transition-all duration-200 ' +
+         (isActive(item.id) ? 'bg-blue-500 text-white shadow-md transform scale-105' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600')"
+
+      >
+        <span class="text-2xl mr-4">{{ item.icon }}</span>
+        <div class="flex-1">
+          <span class="font-medium text-base">{{ item.title }}</span>
+        </div>
+        @if (isActive(item.id)) {
+          <span class="text-white">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+            </svg>
+          </span>
+        }
+      </button>
+    }
+  </nav>
+</div>
