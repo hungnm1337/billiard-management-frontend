@@ -24,7 +24,7 @@ export class MenuEmployeeComponent {
   menuItems: MenuItem[] = [
     { id: 'table-management', title: 'Quản lý bàn', icon: '' },
     { id: 'shift-management', title: 'Ca làm việc', icon: '' },
-    { id: 'salary', title: 'Lương', icon: '' }
+    { id: 'service-management', title: 'Quản lý dịch vụ', icon: '' },
   ];
 
   selectMenu(menuId: string) {
@@ -40,8 +40,8 @@ export class MenuEmployeeComponent {
       case 'shift-management':
         this.router.navigate(['/employee/shift-management']);
         break;
-      case 'salary':
-        this.router.navigate(['/employee/salary']);
+      case 'service-management':
+        this.router.navigate(['/employee/service-management']);
         break;
     }
   }

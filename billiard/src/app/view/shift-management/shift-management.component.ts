@@ -1,42 +1,26 @@
-import { Component, Injectable, computed, inject, signal } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
-import { ShiftService } from '../services/shift/shift.service';
-import { Shift, ShiftAssignment, ShiftAssignmentDetail, ShiftSchedule } from '../interface/shift.model';
+import { Component, computed, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ShiftService, Shift, ShiftAssignment, ShiftAssignmentDetail, ShiftSchedule } from '../../services/shift/shift.service';
 
 @Component({
   selector: 'app-shift-management',
   standalone: true,
   imports: [CommonModule],
   templateUrl: './shift-management.component.html',
-  styleUrl: './shift-management.component.scss'
+  styleUrls: ['./shift-management.component.scss']
 })
-
-export class ShiftManagementComponent {
-   getTotalShiftsInWeek(): number {
-    return this.shiftSchedules().reduce((total, schedule) => total + schedule.shifts.length, 0);
-  }
-getAssignedAssignmentsCount() {
-throw new Error('Method not implemented.');
-}
-getCompletedAssignmentsCount() {
-throw new Error('Method not implemented.');
-}
-private shiftService = inject(ShiftService);
-
-  // Signals
+export class ShiftManagementComponent implements OnInit {
+  private shiftService = inject(ShiftService);
+  private authService = inject(AuthService);
   shifts = signal<Shift[]>([]);
   assignments = signal<ShiftAssignment[]>([]);
   loading = signal(false);
   selectedWeek = signal(new Date());
 
-  // Computed values
+  currentEmployeeId = Number(this.authService.getUserId());
   shiftSchedules = computed(() => {
     return this.generateWeekSchedule();
   });
-
-  currentEmployeeId = 1; // Lấy từ auth service
 
   ngOnInit() {
     this.loadData();
@@ -45,12 +29,16 @@ private shiftService = inject(ShiftService);
   async loadData() {
     this.loading.set(true);
     try {
-      const [shiftsData, assignmentsData] = await Promise.all([
-        this.shiftService.getShifts().toPromise(),
-        this.shiftService.getEmployeeShiftAssignments(this.currentEmployeeId).toPromise()
-      ]);
+      const mockShifts: Shift[] = [
+        { shiftId: 3, shiftName: 'Ca sáng', start: '06:00', end: '12:00' },
+        { shiftId: 4, shiftName: 'Ca chiều', start: '12:00', end: '18:00' },
+        { shiftId: 5, shiftName: 'Ca tối ', start: '18:00', end: '00:00' },
+        { shiftId: 6, shiftName: 'Ca đêm', start: '00:00', end: '06:00' }
+      ];
 
-      this.shifts.set(shiftsData || []);
+      const assignmentsData = await this.shiftService.getEmployeeShiftAssignments(this.currentEmployeeId).toPromise();
+
+      this.shifts.set(mockShifts);
       this.assignments.set(assignmentsData || []);
     } catch (error) {
       console.error('Error loading shift data:', error);
@@ -74,7 +62,7 @@ private shiftService = inject(ShiftService);
         const shift = this.shifts().find(s => s.shiftId === assignment.shiftId);
         return {
           ...assignment,
-          shiftName: shift?.shiftName || '',
+          shiftName: shift?.shiftName || 'Không xác định',
           startTime: shift?.start || '',
           endTime: shift?.end || '',
           displayTime: shift ? this.shiftService.getDisplayTime(shift.start, shift.end) : ''
@@ -94,7 +82,7 @@ private shiftService = inject(ShiftService);
   getStartOfWeek(date: Date): Date {
     const d = new Date(date);
     const day = d.getDay();
-    const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is Sunday
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
     return new Date(d.setDate(diff));
   }
 
@@ -104,29 +92,30 @@ private shiftService = inject(ShiftService);
   }
 
   getStatusClass(status: string): string {
-    switch (status) {
-      case 'Completed': return 'bg-green-100 text-green-800';
-      case 'Assigned': return 'bg-blue-100 text-blue-800';
-      case 'Pending': return 'bg-yellow-100 text-yellow-800';
-      case 'Cancelled': return 'bg-red-100 text-red-800';
+    switch (status.toLowerCase()) {
+      case 'completed': return 'bg-green-100 text-green-800';
+      case 'assigned': return 'bg-blue-100 text-blue-800';
+      case 'pending': return 'bg-yellow-100 text-yellow-800';
+      case 'cancelled': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   }
 
   getStatusText(status: string): string {
-    switch (status) {
-      case 'Completed': return 'Hoàn thành';
-      case 'Assigned': return 'Đã phân công';
-      case 'Pending': return 'Chờ xác nhận';
-      case 'Cancelled': return 'Đã hủy';
-      default: return status;
+    switch (status.toLowerCase()) {
+      case 'completed': return 'Hoàn thành';
+      case 'assigned': return 'Đã phân công';
+      case 'pending': return 'Chờ xác nhận';
+      case 'cancelled': return 'Đã hủy';
+      case '': return 'Chờ xác nhận';
+      default: return status || 'Chờ xác nhận';
     }
   }
 
   async confirmShift(assignmentId: number) {
     try {
       await this.shiftService.updateShiftAssignmentStatus(assignmentId, 'Assigned').toPromise();
-      await this.loadData(); // Reload data
+      await this.loadData();
     } catch (error) {
       console.error('Error confirming shift:', error);
     }
@@ -156,4 +145,22 @@ private shiftService = inject(ShiftService);
       month: '2-digit'
     });
   }
-}
+
+  getCompletedAssignmentsCount(): number {
+    return this.assignments().filter(a => a.status.toLowerCase() === 'completed').length;
+  }
+
+  getAssignedAssignmentsCount(): number {
+    return this.assignments().filter(a => a.status.toLowerCase() === 'assigned').length;
+  }
+
+  getPendingAssignmentsCount(): number {
+    return this.assignments().filter(a => a.status === '' || a.status.toLowerCase() === 'pending').length;
+  }
+
+  getTotalShiftsInWeek(): number {
+    return this.shiftSchedules().reduce((total, schedule) => total + schedule.shifts.length, 0);
+  }
+}import { from } from 'rxjs';
+import { AuthService } from '../../services/auth/auth.service';
+

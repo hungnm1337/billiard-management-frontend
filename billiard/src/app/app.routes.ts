@@ -22,11 +22,11 @@ export const routes: Routes = [
       },
       {
         path: 'shift-management',
-        loadComponent: () => import('./shift-management/shift-management.component').then(c => c.ShiftManagementComponent)
+        loadComponent: () => import('./view/shift-management/shift-management.component').then(c => c.ShiftManagementComponent)
       },
       {
-        path: 'salary',
-        loadComponent: () => import('./view/salary/salary.component').then(c => c.SalaryComponent)
+        path: 'service-management',
+        loadComponent: () => import('./view/employee-service/employee-service.component').then(c => c.EmployeeServiceComponent)
       }
     ]
   },
