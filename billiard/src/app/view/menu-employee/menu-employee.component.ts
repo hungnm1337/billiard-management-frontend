@@ -23,6 +23,7 @@ export class MenuEmployeeComponent {
 
   menuItems: MenuItem[] = [
     { id: 'table-management', title: 'Quản lý bàn', icon: '' },
+    { id: 'service-of-table-management', title: 'Dịch vụ của bàn', icon: '' },
     { id: 'shift-management', title: 'Ca làm việc', icon: '' },
     { id: 'service-management', title: 'Quản lý dịch vụ', icon: '' },
   ];
@@ -36,6 +37,9 @@ export class MenuEmployeeComponent {
     switch(menuId) {
       case 'table-management':
         this.router.navigate(['/employee/table-management']);
+        break;
+      case 'service-of-table-management':
+        this.router.navigate(['/employee/service-of-table-management']);
         break;
       case 'shift-management':
         this.router.navigate(['/employee/shift-management']);

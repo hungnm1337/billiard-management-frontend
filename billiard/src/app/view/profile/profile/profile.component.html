@@ -2,6 +2,18 @@
  <div class="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-6">
       <div class="max-w-5xl mx-auto">
 
+         <!-- Back Button -->
+    <div class="mb-6 animate-slide-in-left">
+      <button
+        (click)="goBack()"
+        class="inline-flex items-center px-4 py-2 bg-white/80 backdrop-blur-sm text-gray-700 rounded-xl hover:bg-white hover:shadow-md transform hover:scale-105 transition-all duration-300 border border-gray-200"
+      >
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+        </svg>
+        Quay lại
+      </button>
+    </div>
 
         <!-- Main Profile Card -->
         <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl overflow-hidden transform hover:scale-[1.02] transition-all duration-500">

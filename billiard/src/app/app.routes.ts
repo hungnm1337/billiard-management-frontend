@@ -21,6 +21,10 @@ export const routes: Routes = [
         loadComponent: () => import('../app/view/table-management/table-management.component').then(c => c.TableManagementComponent)
       },
       {
+        path: 'service-of-table-management',
+        loadComponent: () => import('../app/view/service-of-table/service-of-table.component').then(c => c.ServiceOfTableComponent)
+      },
+      {
         path: 'shift-management',
         loadComponent: () => import('./view/shift-management/shift-management.component').then(c => c.ShiftManagementComponent)
       },

@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth/auth.service';
-
+import { Router } from '@angular/router';
 @Component({
   selector: 'app-header',
   standalone: true,
@@ -12,7 +12,7 @@ import { AuthService } from '../../services/auth/auth.service';
 export class HeaderComponent {
   nameuser: string | null = null;
 
-  constructor(private authService: AuthService) {
+  constructor(private authService: AuthService, private router: Router) {
     this.nameuser = this.authService.getName();
   }
 
@@ -23,6 +23,6 @@ export class HeaderComponent {
 
   logout() {
     this.authService.clearToken();
-    window.location.reload(); // hoặc điều hướng về trang login tuỳ ý
+    this.router.navigate(['/login']);
   }
 }

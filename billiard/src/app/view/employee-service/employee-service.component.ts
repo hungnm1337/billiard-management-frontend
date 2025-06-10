@@ -50,6 +50,7 @@ export class EmployeeServiceComponent implements OnInit {
 
   ngOnInit() {
     this.loadServices();
+    console.log(this.filteredServices());
   }
 
   async loadServices() {

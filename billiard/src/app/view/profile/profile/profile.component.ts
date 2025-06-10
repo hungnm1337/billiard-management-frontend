@@ -1,5 +1,5 @@
 import { Component, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { HeaderComponent } from "../../header/header.component";
 import { ProfileModel } from '../../../interface/profile.model';
 import { ProfileService } from '../../../services/profile/profile.service';
@@ -77,8 +77,12 @@ interface UserProfile {
   `]
 })
 export class UserProfileComponent implements OnInit {
-
-  constructor(private profileService : ProfileService, private authService : AuthService, private outer : Router){}
+  constructor(
+    private profileService : ProfileService,
+    private authService : AuthService,
+    private outer : Router,
+    private location: Location
+  ){}
 
   profile = signal<UserProfile>({
     account: {
@@ -144,6 +148,10 @@ export class UserProfileComponent implements OnInit {
         console.error('Error loading profile:', error);
       }
     });
+  }
+
+   goBack(): void {
+    this.location.back();
   }
 
    private translateStatus(status: string): string {

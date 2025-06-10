@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, BehaviorSubject } from 'rxjs';
+import { Observable, BehaviorSubject, tap } from 'rxjs';
 
 export interface Service {
   serviceId: number;
@@ -27,7 +27,17 @@ export class ServiceService {
   public services$ = this.servicesSubject.asObservable();
 
   getServices(): Observable<Service[]> {
-    return this.http.get<Service[]>(`${this.API_BASE}/Service`);
+    return this.http.get<Service[]>(`${this.API_BASE}/Service`).pipe(
+    tap(data => {
+      console.log('🔥 Raw API Response from /Service:', data);
+      console.table(data); // Hiển thị dạng bảng
+      console.log('📊 Response details:', {
+        count: data.length,
+        firstItem: data[0],
+        lastItem: data[data.length - 1]
+      });
+    })
+  );;
   }
 
   // Sửa method này để phù hợp với API mới

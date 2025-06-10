@@ -1,4 +1,4 @@
-import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { TableService } from '../../services/table/table.service';
 import { Table, TableStatus } from '../../interface/table.interface';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
@@ -7,19 +7,112 @@ import { AuthService } from '../../services/auth/auth.service';
 import { debounceTime, distinctUntilChanged, startWith } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
+import { ServiceService } from '../../services/service/service.service';
+import { Service, ServiceStatus } from '../../services/service/service.service';
+import { InvoiceService } from '../../services/invoice/invoice.service';
 
 @Component({
   selector: 'app-table-management',
   standalone: true,
   imports: [ReactiveFormsModule, CommonModule],
   templateUrl: './table-management.component.html',
-  styleUrl: './table-management.component.scss'
+  styleUrl: './table-management.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TableManagementComponent implements OnInit {
+tableStartTimes = signal<{[tableId: number]: Date}>({});
+private updateTimer: any;
+  currentTime = signal(new Date());
 
-InverTable(_t112: Table) {
-throw new Error('Method not implemented.');
+InverTable(_t112: number) {
+  console.log('InverTable called with:', _t112);
+  const tableId = _t112;
+  const employeeId = this.authService.getUserId();
+
+  this.invoice.createInvoice(Number(employeeId), tableId).subscribe({
+    next: (invoiceId) => {
+      console.log('Invoice created successfully with ID:', invoiceId);
+
+      // Lưu invoiceId lên localStorage
+      localStorage.setItem(tableId.toString(), invoiceId.toString());
+
+      // Lưu thời gian bắt đầu
+      const currentTime = new Date();
+      console.log('Current time:', currentTime.toLocaleString());
+
+      // Cập nhật signal với thời gian bắt đầu của bàn
+      const currentTimes = this.tableStartTimes();
+      this.tableStartTimes.set({
+        ...currentTimes,
+        [tableId]: currentTime
+      });
+
+      // Lưu thời gian vào localStorage để persist data
+      localStorage.setItem(`table_start_time_${tableId}`, currentTime.toISOString());
+      this.refreshData(); // Tải lại danh sách bàn để cập nhật trạng thái
+    },
+    error: (error) => {
+      console.error('Error creating invoice:', error);
+    }
+  });
 }
+
+ private startUpdateTimer(): void {
+    this.updateTimer = setInterval(() => {
+      this.currentTime.set(new Date());
+      this.cdr.markForCheck(); // Trigger change detection manually
+    }, 1000);
+  }
+
+private loadTableStartTimes(): void {
+  const savedTimes: {[tableId: number]: Date} = {};
+
+  // Duyệt qua localStorage để tìm các thời gian đã lưu
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key && key.startsWith('table_start_time_')) {
+      const tableId = parseInt(key.replace('table_start_time_', ''));
+      const timeString = localStorage.getItem(key);
+      if (timeString) {
+        savedTimes[tableId] = new Date(timeString);
+      }
+    }
+  }
+
+  this.tableStartTimes.set(savedTimes);
+}
+// Thêm method để lấy thời gian bắt đầu của bàn
+getTableStartTime(tableId: number): Date | null {
+  return this.tableStartTimes()[tableId] || null;
+}
+
+// Thêm method để format thời gian hiển thị
+formatStartTime(tableId: number): string {
+  const startTime = this.getTableStartTime(tableId);
+  if (!startTime) return '';
+
+  return startTime.toLocaleTimeString('vi-VN', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  });
+}
+
+// Thêm method để tính thời gian đã sử dụng
+getUsedTime(tableId: number): string {
+  const startTime = this.getTableStartTime(tableId);
+  if (!startTime) return '';
+
+  const now = this.currentTime();
+  const diffMs = now.getTime() - startTime.getTime();
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+  const diffSeconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+
+  return `${diffHours.toString().padStart(2, '0')}:${diffMinutes.toString().padStart(2, '0')}:${diffSeconds.toString().padStart(2, '0')}`;
+}
+
+  services = signal<Service[]>([]);
 
   showOtpModal = signal(false);
   currentOrderId = signal(0);
@@ -27,7 +120,7 @@ throw new Error('Method not implemented.');
   isLoading = signal(false);
   private tableService = inject(TableService);
   private destroyRef = inject(DestroyRef);
-  // filteredAndSortedTables is defined later with full filtering and sorting logic.
+
   loading = signal<boolean>(false);
   error = signal<string | null>(null);
   selectedTable = signal<Table | null>(null);
@@ -52,15 +145,28 @@ throw new Error('Method not implemented.');
     { value: TableStatus.RESERVED, label: 'Đã đặt trước' }
   ];
 
+
   sortOptions = [
     { value: 'name', label: 'Tên bàn' },
     { value: 'price', label: 'Giá tiền' },
     { value: 'status', label: 'Trạng thái' }
   ];
-constructor(private router: Router, private authService: AuthService) {
+constructor( private cdr: ChangeDetectorRef,private router: Router, private authService: AuthService, private serviceService: ServiceService, private invoice: InvoiceService) {
 
 }
 
+async loadServices() {
+    this.loading.set(true);
+    try {
+      const services = await this.serviceService.getServices().toPromise();
+      this.services.set(services || []);
+      this.serviceService.updateServices(services || []);
+    } catch (error) {
+      console.error('Error loading services:', error);
+    } finally {
+      this.loading.set(false);
+    }
+  }
 
 filteredAndSortedTables = computed(() => {
     let tables = [...this.allTables()]; // Clone để không ảnh hưởng dữ liệu gốc
@@ -144,6 +250,10 @@ filteredAndSortedTables = computed(() => {
     this.loadTables();
     this.setupFormControls();
     this.subscribeToService();
+    this.loadServices();
+    this.startUpdateTimer();
+    this.loadTableStartTimes();
+    console.log(this.services());
   }
 
   private setupFormControls(): void {

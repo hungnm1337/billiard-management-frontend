@@ -147,7 +147,7 @@
               <button
                 (click)="updateQuantity(service.serviceId, -1)"
                 [disabled]="service.quantity <= 0"
-                class="w-10 h-10 rounded-full bg-red-500 text-white hover:bg-red-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+                class="w-10 h-10 rounded-full text-red-500  hover:bg-red-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
               >
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
@@ -160,7 +160,7 @@
 
               <button
                 (click)="updateQuantity(service.serviceId, 1)"
-                class="w-10 h-10 rounded-full bg-green-500 text-white hover:bg-green-600 transition-colors flex items-center justify-center"
+                class="w-10 h-10 rounded-full text-green-500 hover:bg-green-600 transition-colors flex items-center justify-center"
               >
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
