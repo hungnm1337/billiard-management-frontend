@@ -1,6 +1,6 @@
 import { Component, computed, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ShiftService, Shift, ShiftAssignment, ShiftAssignmentDetail, ShiftSchedule } from '../../services/shift/shift.service';
+import { ShiftService, Shift, ShiftAssignment, ShiftAssignmentDetail, ShiftSchedule } from '../../../services/shift/shift.service';
 
 @Component({
   selector: 'app-shift-management',
@@ -162,5 +162,5 @@ export class ShiftManagementComponent implements OnInit {
     return this.shiftSchedules().reduce((total, schedule) => total + schedule.shifts.length, 0);
   }
 }import { from } from 'rxjs';
-import { AuthService } from '../../services/auth/auth.service';
+import { AuthService } from '../../../services/auth/auth.service';
 

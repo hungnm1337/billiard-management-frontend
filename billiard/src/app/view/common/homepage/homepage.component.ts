@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { HeaderComponent } from "../header/header.component";
-import { NewsService, NewsArticle } from '../../services/news/news.service';
+import { NewsService, NewsArticle } from '../../../services/news/news.service';
 import { CommonModule } from '@angular/common';
-import { VideoService } from '../../services/video/video.service';
+import { VideoService } from '../../../services/video/video.service';
 import { RouterLink } from '@angular/router';
 @Component({
   selector: 'app-homepage',

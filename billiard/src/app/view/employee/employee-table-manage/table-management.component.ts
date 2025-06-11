@@ -1,15 +1,15 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
-import { TableService } from '../../services/table/table.service';
-import { Table, TableStatus } from '../../interface/table.interface';
+import { TableService } from '../../../services/table/table.service';
+import { Table, TableStatus } from '../../../interface/table.interface';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AuthService } from '../../services/auth/auth.service';
+import { AuthService } from '../../../services/auth/auth.service';
 import { debounceTime, distinctUntilChanged, startWith } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
-import { ServiceService } from '../../services/service/service.service';
-import { Service, ServiceStatus } from '../../services/service/service.service';
-import { InvoiceService } from '../../services/invoice/invoice.service';
+import { ServiceService } from '../../../services/service/service.service';
+import { Service, ServiceStatus } from '../../../services/service/service.service';
+import { InvoiceService } from '../../../services/invoice/invoice.service';
 
 @Component({
   selector: 'app-table-management',
@@ -20,6 +20,39 @@ import { InvoiceService } from '../../services/invoice/invoice.service';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TableManagementComponent implements OnInit {
+
+closeTable(arg0: number) {
+console.log('closeTable called with:', arg0);
+// tính thời gian đã sử dụng
+const tableId = arg0;
+const startTime = this.getTableStartTime(tableId);
+if (!startTime) {
+  console.error('No start time found for table:', tableId);
+}
+const endTime = new Date();
+if (startTime) {
+  const usedTime = endTime.getTime() - startTime.getTime();
+
+  const usedSeconds = Math.floor(usedTime / 1000);
+  console.log('Used time in seconds:', usedSeconds);
+
+  const hourlyRate = this.getTableHourlyRate(tableId);
+  console.log('Hourly rate for table:', hourlyRate);
+  const totalCost = (usedSeconds / 3600) * hourlyRate;
+  console.log('Total cost:', totalCost);
+} else {
+  console.error('Start time is not defined for table:', tableId);
+}
+
+
+}
+  getTableHourlyRate(tableId: number) {
+    // lấy giá bàn theo id bàn
+    const table = this.allTables().find(t => t.tableId === tableId);
+    // trả về giá tiền
+    return table ? table.hourlyRate : 0;
+  }
+
 tableStartTimes = signal<{[tableId: number]: Date}>({});
 private updateTimer: any;
   currentTime = signal(new Date());
@@ -34,7 +67,7 @@ InverTable(_t112: number) {
       console.log('Invoice created successfully with ID:', invoiceId);
 
       // Lưu invoiceId lên localStorage
-      localStorage.setItem(tableId.toString(), invoiceId.toString());
+      localStorage.setItem("TableId-"+tableId.toString(),"InvoiceId-"+ invoiceId.toString());
 
       // Lưu thời gian bắt đầu
       const currentTime = new Date();

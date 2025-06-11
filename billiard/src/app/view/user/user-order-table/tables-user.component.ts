@@ -3,14 +3,14 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { debounceTime, distinctUntilChanged, startWith } from 'rxjs/operators';
-import { AuthService } from '../../services/auth/auth.service';
-import { TableService } from '../../services/table/table.service';
-import { Table, TableStatus } from '../../interface/table.interface';
-import { HeaderComponent } from "../header/header.component";
-import { routes } from '../../app.routes';
+import { AuthService } from '../../../services/auth/auth.service';
+import { TableService } from '../../../services/table/table.service';
+import { Table, TableStatus } from '../../../interface/table.interface';
+import { HeaderComponent } from '../../common/header/header.component';
+import { routes } from '../../../app.routes';
 import { Router } from '@angular/router';
-import { OtpService } from '../../services/otp.service';
-import { OtpPopupComponent } from '../otp/otp-popup/otp-popup.component';
+import { OtpService } from '../../../services/otp.service';
+import { OtpPopupComponent } from '../../common/otp-popup/otp-popup.component';
 
 @Component({
   selector: 'app-tables-user',

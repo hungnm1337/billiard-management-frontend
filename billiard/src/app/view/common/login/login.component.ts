@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { HeaderComponent } from '../header/header.component';
 import { FormGroup, FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
-import { AuthService } from '../../services/auth/auth.service';
+import { AuthService } from '../../../services/auth/auth.service';
 @Component({
   selector: 'app-login',
   standalone: true,
@@ -20,7 +20,7 @@ export class LoginComponent {
     this.loginForm = this.fb.group({
       username: ['', [
         Validators.required,
-     
+
       ]],
       password: ['', [
         Validators.required

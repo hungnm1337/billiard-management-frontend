@@ -148,8 +148,8 @@
                 </button>
               } @else if (table.status === 'Đang sử dụng') {
                 <button
-                  disabled
-                  class="w-full bg-red-400 opacity-60 cursor-not-allowed text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center">
+                  (click)="closeTable(table.tableId); $event.stopPropagation()"
+                  class="w-full bg-red-400 hover:bg-red-600  text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center">
                   <i class="fas fa-ban mr-2"></i>
                  Đóng bàn
                 </button>

@@ -1,6 +1,6 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
-import { HeaderComponent } from "../../header/header.component";
+import { HeaderComponent } from '../header/header.component';
 import { ProfileModel } from '../../../interface/profile.model';
 import { ProfileService } from '../../../services/profile/profile.service';
 import { AuthService } from '../../../services/auth/auth.service';

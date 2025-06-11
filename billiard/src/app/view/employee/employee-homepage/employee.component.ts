@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
-import { HeaderComponent } from "../header/header.component";
-import { MenuEmployeeComponent } from "../menu-employee/menu-employee.component";
+import { HeaderComponent } from '../../common/header/header.component';
+import { MenuEmployeeComponent } from "../employee-menu/menu-employee.component";
 import { Router, RouterModule } from '@angular/router';
 @Component({
   selector: 'app-employee',

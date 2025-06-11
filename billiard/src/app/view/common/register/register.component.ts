@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { HeaderComponent } from "../header/header.component";
-import { RegisterService } from '../../services/register/register.service';
+import { RegisterService } from '../../../services/register/register.service';
 import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 @Component({
   selector: 'app-register',

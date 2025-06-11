@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ServiceService, Service, ServiceStatus } from '../../services/service/service.service';
+import { ServiceService, Service, ServiceStatus } from '../../../services/service/service.service';
 import { catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 
@@ -68,45 +68,51 @@ export class EmployeeServiceComponent implements OnInit {
 
   // Sửa method này để sử dụng API mới
   async updateQuantity(serviceId: number, change: number) {
-    const services = this.services();
-    const serviceIndex = services.findIndex(s => s.serviceId === serviceId);
+  const services = this.services();
+  const serviceIndex = services.findIndex(s => s.serviceId === serviceId);
 
-    if (serviceIndex === -1) return;
+  if (serviceIndex === -1) return;
 
-    const currentService = services[serviceIndex];
+  const currentService = services[serviceIndex];
+  const newQuantity = Math.max(0, currentService.quantity + change);
 
-    try {
-      if (change > 0) {
-        // Sử dụng increase API
-        await this.serviceService.increaseQuantity(serviceId, change)
-          .pipe(
-            catchError(error => {
-              console.error('Error increasing quantity:', error);
-              this.showErrorMessage(error);
-              return of(null);
-            })
-          )
-          .toPromise();
-      } else if (change < 0) {
-        // Sử dụng decrease API
-        const decreaseAmount = Math.abs(change);
-        await this.serviceService.decreaseQuantity(serviceId, decreaseAmount)
-          .pipe(
-            catchError(error => {
-              console.error('Error decreasing quantity:', error);
-              this.showErrorMessage(error);
-              return of(null);
-            })
-          )
-          .toPromise();
-      }
+  // Cập nhật optimistic - hiển thị ngay lập tức
+  const updatedServices = [...services];
+  updatedServices[serviceIndex] = { ...currentService, quantity: newQuantity };
+  this.services.set(updatedServices);
 
-      // Reload data sau khi update thành công
-      await this.loadServices();
-    } catch (error) {
-      console.error('Error updating quantity:', error);
+  try {
+    if (change > 0) {
+      await this.serviceService.increaseQuantity(serviceId, change)
+        .pipe(
+          catchError(error => {
+            // Rollback nếu có lỗi
+            this.services.set(services);
+            this.showErrorMessage(error);
+            return of(null);
+          })
+        )
+        .toPromise();
+    } else if (change < 0) {
+      const decreaseAmount = Math.abs(change);
+      await this.serviceService.decreaseQuantity(serviceId, decreaseAmount)
+        .pipe(
+          catchError(error => {
+            // Rollback nếu có lỗi
+            this.services.set(services);
+            this.showErrorMessage(error);
+            return of(null);
+          })
+        )
+        .toPromise();
     }
+  } catch (error) {
+    // Rollback nếu có lỗi
+    this.services.set(services);
+    console.error('Error updating quantity:', error);
   }
+}
+
 
   // Thêm method để hiển thị error message
   private showErrorMessage(error: any) {

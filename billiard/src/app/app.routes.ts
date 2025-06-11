@@ -1,13 +1,13 @@
 import { Routes } from '@angular/router';
-import { HomepageComponent } from './view/homepage/homepage.component';
-import { ErrorComponent } from './view/error/error.component';
-import { LoginComponent } from './view/login/login.component';
-import { RegisterComponent } from './view/register/register.component';
-import { EmployeeComponent } from './view/employee/employee.component';
-import { ManagerComponent } from './view/manager/manager.component';
-import { TablesUserComponent } from './view/tables-user/tables-user.component';
-import { UserProfileComponent } from './view/profile/profile/profile.component';
-import { TableManagementComponent } from './view/table-management/table-management.component';
+import { HomepageComponent } from './view/common/homepage/homepage.component';
+import { ErrorComponent } from './view/common/error/error.component';
+import { LoginComponent } from './view/common/login/login.component';
+import { RegisterComponent } from './view/common/register/register.component';
+import { EmployeeComponent } from './view/employee/employee-homepage/employee.component';
+import { ManagerComponent } from './view/manager/manager-homepage/manager.component';
+import { TablesUserComponent } from './view/user/user-order-table/tables-user.component';
+import { UserProfileComponent } from './view/common/profile/profile.component';
+import { TableManagementComponent } from './view/employee/employee-table-manage/table-management.component';
 export const routes: Routes = [
   {path:"",component:HomepageComponent,title:"Homepage"},
   {path:"login",component:LoginComponent, title:"Login"},
@@ -18,19 +18,19 @@ export const routes: Routes = [
        { path: '', redirectTo: 'table-management', pathMatch: 'full' },
       {
         path: 'table-management',
-        loadComponent: () => import('../app/view/table-management/table-management.component').then(c => c.TableManagementComponent)
+        loadComponent: () => import('./view/employee/employee-table-manage/table-management.component').then(c => c.TableManagementComponent)
       },
       {
         path: 'service-of-table-management',
-        loadComponent: () => import('../app/view/service-of-table/service-of-table.component').then(c => c.ServiceOfTableComponent)
+        loadComponent: () => import('./view/employee/employee-service-of-table/service-of-table.component').then(c => c.ServiceOfTableComponent)
       },
       {
         path: 'shift-management',
-        loadComponent: () => import('./view/shift-management/shift-management.component').then(c => c.ShiftManagementComponent)
+        loadComponent: () => import('./view/employee/employee-shift/shift-management.component').then(c => c.ShiftManagementComponent)
       },
       {
         path: 'service-management',
-        loadComponent: () => import('./view/employee-service/employee-service.component').then(c => c.EmployeeServiceComponent)
+        loadComponent: () => import('./view/employee/employee-service/employee-service.component').then(c => c.EmployeeServiceComponent)
       }
     ]
   },

@@ -147,11 +147,9 @@
               <button
                 (click)="updateQuantity(service.serviceId, -1)"
                 [disabled]="service.quantity <= 0"
-                class="w-10 h-10 rounded-full text-red-500  hover:bg-red-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+                class="w-10 h-10 rounded-full text-gray-800  disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
               >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
-                </svg>
+               <i class="fi fi-br-minus"></i>
               </button>
 
               <div class="px-4 py-2 bg-gray-100 rounded-lg min-w-[60px] text-center">
@@ -160,28 +158,27 @@
 
               <button
                 (click)="updateQuantity(service.serviceId, 1)"
-                class="w-10 h-10 rounded-full text-green-500 hover:bg-green-600 transition-colors flex items-center justify-center"
+                class="w-10 h-10 rounded-full text-gray-800 transition-colors flex items-center justify-center"
               >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                </svg>
+               <i class="fi fi-br-plus"></i>
               </button>
             </div>
 
             <!-- Quick Actions -->
             <div class="flex gap-2 mt-4">
-              <button
-                (click)="updateQuantity(service.serviceId, 10)"
-                class="flex-1 px-3 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors"
-              >
-                +10
-              </button>
+
               <button
                 (click)="updateQuantity(service.serviceId, -10)"
                 [disabled]="service.quantity < 10"
-                class="flex-1 px-3 py-2 bg-orange-500 text-white text-sm rounded hover:bg-orange-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                class="flex-1 px-3 py-2 text-gray-800 text-sm rounded border-solid border-red-500 border-2 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
               >
                 -10
+              </button>
+              <button
+                (click)="updateQuantity(service.serviceId, 10)"
+                class="flex-1 px-3 py-2 text-gray-800 text-sm rounded border-solid border-green-500 border-2 transition-colors"
+              >
+                +10
               </button>
             </div>
           </div>
