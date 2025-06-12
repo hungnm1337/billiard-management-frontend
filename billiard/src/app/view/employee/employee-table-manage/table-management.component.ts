@@ -10,7 +10,14 @@ import { CommonModule } from '@angular/common';
 import { ServiceService } from '../../../services/service/service.service';
 import { Service, ServiceStatus } from '../../../services/service/service.service';
 import { InvoiceService } from '../../../services/invoice/invoice.service';
-
+import { ServiceOfTableService } from '../../../services/service-of-table/servcie-of-table.service';
+interface ServiceItem {
+  id: number;
+  name: string;
+  quantity: number;
+  price: number;
+  total: number;
+}
 @Component({
   selector: 'app-table-management',
   standalone: true,
@@ -22,29 +29,74 @@ import { InvoiceService } from '../../../services/invoice/invoice.service';
 export class TableManagementComponent implements OnInit {
 
 closeTable(arg0: number) {
-console.log('closeTable called with:', arg0);
-// tính thời gian đã sử dụng
-const tableId = arg0;
-const startTime = this.getTableStartTime(tableId);
-if (!startTime) {
-  console.error('No start time found for table:', tableId);
-}
-const endTime = new Date();
-if (startTime) {
+  console.log('closeTable called with:', arg0);
+  const tableId = arg0;
+  const startTime = this.getTableStartTime(tableId);
+
+  if (!startTime) {
+    console.error('No start time found for table:', tableId);
+    return;
+  }
+
+  const endTime = new Date();
   const usedTime = endTime.getTime() - startTime.getTime();
-
   const usedSeconds = Math.floor(usedTime / 1000);
-  console.log('Used time in seconds:', usedSeconds);
-
   const hourlyRate = this.getTableHourlyRate(tableId);
-  console.log('Hourly rate for table:', hourlyRate);
-  const totalCost = (usedSeconds / 3600) * hourlyRate;
-  console.log('Total cost:', totalCost);
-} else {
-  console.error('Start time is not defined for table:', tableId);
+  const tableTotalCost = (usedSeconds / 3600) * hourlyRate;
+
+  // Lấy thông tin dịch vụ từ ServiceOfTableService
+  const tableServices = this.getTableServicesForInvoice(tableId);
+  const servicesTotalCost = this.calculateServicesCost(tableId);
+
+  const invoiceData = {
+    tableId: tableId,
+    invoiceId: localStorage.getItem("TableId-"+tableId.toString())?.replace(/^InvoiceId-/, "") || "0",
+    tableName: this.getTableName(tableId),
+    startTime: startTime,
+    endTime: endTime,
+    usedTimeSeconds: usedSeconds,
+    hourlyRate: hourlyRate,
+    tableTotalCost: tableTotalCost,
+    services: tableServices,
+    servicesTotalCost: servicesTotalCost
+  };
+
+  console.log('Invoice data:', invoiceData);
+
+  // Navigate với state
+  this.router.navigate(['/employee-invoice'], {
+    state: { invoiceData: invoiceData }
+  });
+}
+getTableName(tableId: number): string {
+  const table = this.allTables().find(t => t.tableId === tableId);
+  return table ? table.tableName : `Bàn ${tableId}`;
+}
+getTableServicesForInvoice(tableId: number): ServiceItem[] {
+
+  const tableServices = this.serviceOfTableService.tableServices()[tableId];
+  const allServices = this.serviceService.getCurrentServices();
+
+  if (!tableServices) return [];
+
+  return Object.entries(tableServices.services).map(([serviceId, quantity]) => {
+    const service = allServices.find(s => s.serviceId === parseInt(serviceId));
+    if (service) {
+      return {
+        id: service.serviceId,
+        name: service.serviceName,
+        quantity: quantity,
+        price: service.price,
+        total: service.price * quantity
+      };
+    }
+    return null;
+  }).filter(Boolean) as ServiceItem[];
 }
 
-
+// Method tính tổng tiền dịch vụ
+calculateServicesCost(tableId: number): number {
+  return this.serviceOfTableService.getTotalAmount(tableId);
 }
   getTableHourlyRate(tableId: number) {
     // lấy giá bàn theo id bàn
@@ -184,7 +236,7 @@ getUsedTime(tableId: number): string {
     { value: 'price', label: 'Giá tiền' },
     { value: 'status', label: 'Trạng thái' }
   ];
-constructor( private cdr: ChangeDetectorRef,private router: Router, private authService: AuthService, private serviceService: ServiceService, private invoice: InvoiceService) {
+constructor( private cdr: ChangeDetectorRef,private router: Router, private authService: AuthService, private serviceService: ServiceService, private invoice: InvoiceService, private serviceOfTableService: ServiceOfTableService) {
 
 }
 
@@ -280,6 +332,7 @@ filteredAndSortedTables = computed(() => {
   );
 
   ngOnInit(): void {
+    this.refreshData();
     this.loadTables();
     this.setupFormControls();
     this.subscribeToService();

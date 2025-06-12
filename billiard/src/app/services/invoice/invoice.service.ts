@@ -7,7 +7,19 @@ export interface CreateInvoiceRequest {
   employeeId: number;
   tableId: number;
 }
+export interface InvoiceUpdateRequest {
+  invoiceId: number;
+  timeEnd?: string; // ISO string format
+  totalAmount: number;
+  userId?: number;
+  paymentStatus: string;
+}
 
+// Interface cho update response
+export interface UpdateInvoiceResponse {
+  success: boolean;
+  message?: string;
+}
 // Interface cho response (invoice ID)
 export interface CreateInvoiceResponse {
   invoiceId: number;
@@ -41,4 +53,32 @@ export class InvoiceService {
 
     return this.http.post<number>(this.apiUrl, request, { headers });
   }
+  // Thêm method updateInvoice
+updateInvoice(invoiceData: InvoiceUpdateRequest): Observable<number> {
+  const headers = new HttpHeaders({
+    'Content-Type': 'application/json'
+  });
+
+  return this.http.put<number>(`${this.apiUrl}/${invoiceData.invoiceId}`, invoiceData, { headers });
+}
+
+
+  // Method helper để update invoice khi đóng bàn
+  updateInvoiceOnClose(
+    invoiceId: number,
+    totalAmount: number,
+    userId?: number,
+    paymentStatus: string = 'Đã thanh toán'
+  ): Observable<number> {
+    const updateData: InvoiceUpdateRequest = {
+      invoiceId: invoiceId,
+      timeEnd: new Date().toISOString(),
+      totalAmount: totalAmount,
+      userId: userId,
+      paymentStatus: paymentStatus
+    };
+
+    return this.updateInvoice(updateData);
+  }
+
 }

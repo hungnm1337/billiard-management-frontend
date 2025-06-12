@@ -3,7 +3,8 @@ import { HeaderComponent } from "../header/header.component";
 import { NewsService, NewsArticle } from '../../../services/news/news.service';
 import { CommonModule } from '@angular/common';
 import { VideoService } from '../../../services/video/video.service';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
+import { AuthService } from '../../../services/auth/auth.service';
 @Component({
   selector: 'app-homepage',
   standalone: true,
@@ -20,7 +21,7 @@ export class HomepageComponent implements OnInit {
    loadingV = true;
   errorV = '';
 
-  constructor(private newsService: NewsService,private videoService: VideoService) {}
+  constructor(private newsService: NewsService,private videoService: VideoService,private authService: AuthService,private router: Router) {}
 // Thêm vào component TypeScript
 ngAfterViewInit() {
   this.observeScrollAnimations();
@@ -50,6 +51,12 @@ private observeScrollAnimations() {
 }
 
   ngOnInit(): void {
+    const roleId = this.authService.getRoleId();
+     if (roleId === '2') {
+        this.router.navigate(['/employee']);
+      } else if (roleId === '3') {
+        this.router.navigate(['/manager']);
+      }
     this.videoService.getVideos().subscribe({
       next: (data) => {
         this.videos = data;

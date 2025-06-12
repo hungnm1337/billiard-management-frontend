@@ -1,0 +1,158 @@
+<div class="container mx-auto p-6 max-w-4xl">
+  <div class="bg-white rounded-lg shadow-lg p-6" *ngIf="invoiceData">
+    <!-- Header -->
+    <div class="text-center mb-">
+      <h1 class="text-2xl font-bold text-gray-800">HÓA ĐƠN THANH TOÁN</h1>
+      <p class="text-gray-600">{{ invoiceData.tableName }} (Bàn số {{ invoiceData.tableId }} - Mã hóa đơn {{ invoiceData.invoiceId }})</p>
+    </div>
+@if (showSuccessNotification) {
+  <div
+    class="fixed top-4 right-4 z-50 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg transform transition-all duration-300 ease-in-out animate-slide-in">
+    <div class="flex items-center">
+      <i class="fas fa-check-circle mr-3 text-xl"></i>
+      <div>
+        <p class="font-semibold">Thanh toán thành công!</p>
+        <p class="text-sm">{{ notificationMessage }}</p>
+      </div>
+    </div>
+  </div>
+}
+    <!-- Thông tin thời gian -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+      <div class="bg-gray-50 p-4 rounded-lg">
+        <h3 class="font-semibold text-gray-700 mb-3">Thông tin thời gian</h3>
+        <div class="space-y-2 text-sm">
+          <div class="flex justify-between">
+            <span>Thời gian bắt đầu:</span>
+            <span class="font-medium">{{ invoiceData.startTime | date:'dd/MM/yyyy HH:mm:ss' }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span>Thời gian kết thúc:</span>
+            <span class="font-medium">{{ invoiceData.endTime | date:'dd/MM/yyyy HH:mm:ss' }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span>Thời gian chơi:</span>
+            <span class="font-medium">{{ formatUsedTime() }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-gray-50 p-4 rounded-lg">
+        <h3 class="font-semibold text-gray-700 mb-3">Chi phí bàn</h3>
+        <div class="space-y-2 text-sm">
+          <div class="flex justify-between">
+            <span>Giá tiền 1 giờ:</span>
+            <span class="font-medium">{{ invoiceData.hourlyRate | number:'1.0-0' }}đ</span>
+          </div>
+          <div class="flex justify-between border-t pt-2">
+            <span class="font-semibold">Tổng tiền bàn:</span>
+            <span class="font-semibold text-blue-600">{{ invoiceData.tableTotalCost | number:'1.0-0' }}đ</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Danh sách dịch vụ -->
+    <div class="mb-6">
+      <h3 class="font-semibold text-gray-700 mb-3">Danh sách dịch vụ</h3>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-100">
+            <tr>
+              <th class="text-left p-3">Tên dịch vụ</th>
+              <th class="text-center p-3">Số lượng</th>
+              <th class="text-right p-3">Giá</th>
+              <th class="text-right p-3">Thành tiền</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let service of invoiceData.services" class="border-b">
+              <td class="p-3">{{ service.name }}</td>
+              <td class="text-center p-3">{{ service.quantity }}</td>
+              <td class="text-right p-3">{{ service.price | number:'1.0-0' }}đ</td>
+              <td class="text-right p-3">{{ service.total | number:'1.0-0' }}đ</td>
+            </tr>
+            <tr *ngIf="invoiceData.services.length === 0">
+              <td colspan="4" class="text-center p-3 text-gray-500">Không có dịch vụ nào</td>
+            </tr>
+          </tbody>
+          <tfoot class="bg-gray-100">
+            <tr>
+              <td colspan="3" class="p-3 font-semibold">Tổng tiền dịch vụ:</td>
+              <td class="text-right p-3 font-semibold">{{ invoiceData.servicesTotalCost | number:'1.0-0' }}đ</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+    <!-- Tổng cộng -->
+    <div class="bg-blue-50 p-4 rounded-lg mb-6">
+      <div class="flex justify-between items-center">
+        <span class="text-lg font-semibold">TỔNG CỘNG:</span>
+        <span class="text-2xl font-bold text-blue-600">{{ getTotalAmount() | number:'1.0-0' }}đ</span>
+      </div>
+    </div>
+
+    <!-- Phương thức thanh toán -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+      <div>
+        <h3 class="font-semibold text-gray-700 mb-3">Phương thức thanh toán</h3>
+        <div class="space-y-3">
+          <label class="flex items-center">
+            <input
+              type="radio"
+              name="paymentMethod"
+              value="cash"
+              [(ngModel)]="paymentMethod"
+              (change)="onPaymentMethodChange()"
+              class="mr-2">
+            <span>Thanh toán tiền mặt</span>
+          </label>
+          <label class="flex items-center">
+            <input
+              type="radio"
+              name="paymentMethod"
+              value="online"
+              [(ngModel)]="paymentMethod"
+              (change)="onPaymentMethodChange()"
+              class="mr-2">
+            <span>Thanh toán online</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- QR Code -->
+      <div *ngIf="paymentMethod === 'online'" class="text-center">
+        <h3 class="font-semibold text-gray-700 mb-3">Mã QR thanh toán</h3>
+        <div class="flex justify-center">
+          <img [src]="qrCodeUrl" alt="QR Code" class="border rounded-lg">
+        </div>
+      </div>
+    </div>
+
+    <!-- Buttons -->
+    <div class="flex gap-4 justify-end">
+      <button
+        (click)="goBack()"
+        class="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600">
+        Quay lại
+      </button>
+      <button
+        (click)="processPayment()"
+        class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+        Xác nhận thanh toán
+      </button>
+    </div>
+  </div>
+
+  <!-- Thông báo nếu không có data -->
+  <div *ngIf="!invoiceData" class="text-center p-6">
+    <p class="text-gray-500">Không có thông tin hóa đơn</p>
+    <button
+      (click)="goBack()"
+      class="mt-4 px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+      Quay lại
+    </button>
+  </div>
+</div>

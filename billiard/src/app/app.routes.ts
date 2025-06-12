@@ -8,6 +8,7 @@ import { ManagerComponent } from './view/manager/manager-homepage/manager.compon
 import { TablesUserComponent } from './view/user/user-order-table/tables-user.component';
 import { UserProfileComponent } from './view/common/profile/profile.component';
 import { TableManagementComponent } from './view/employee/employee-table-manage/table-management.component';
+import { EmployeeInvoiceComponent } from './view/employee/employee-invoice/employee-invoice.component';
 export const routes: Routes = [
   {path:"",component:HomepageComponent,title:"Homepage"},
   {path:"login",component:LoginComponent, title:"Login"},
@@ -34,6 +35,7 @@ export const routes: Routes = [
       }
     ]
   },
+  {path:"employee-invoice",component:EmployeeInvoiceComponent,title:"Employee Invoice"},
   {path:"manager",component:ManagerComponent,title:"Manager"},
   {path:"tablesuser",component:TablesUserComponent,title:"Tables"},
   {path:"profile",component:UserProfileComponent,title:"Profile"},
