@@ -2,27 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { InvoiceService, InvoiceUpdateRequest } from '../../../services/invoice/invoice.service';
-interface InvoiceData {
-  tableId: number;
-  invoiceId: number;
-  tableName: string;
-  startTime: Date;
-  endTime: Date;
-  usedTimeSeconds: number;
-  hourlyRate: number;
-  tableTotalCost: number;
-  services: ServiceItem[];
-  servicesTotalCost: number;
-}
+import { InvoiceService, InvoiceUpdateRequest ,ServiceOfTable ,ServiceItem,InvoiceData} from '../../../services/invoice/invoice.service';
 
-interface ServiceItem {
-  id: number;
-  name: string;
-  quantity: number;
-  price: number;
-  total: number;
-}
 
 @Component({
   selector: 'app-employee-invoice',
@@ -98,8 +79,23 @@ export class EmployeeInvoiceComponent implements OnInit {
     paymentStatus: this.paymentMethod === 'online' ? 'VNpay' : 'Đã thanh toán tiền mặt'
   };
 
+  const tableServices: ServiceOfTable = {
+    tableId: this.invoiceData?.tableId ?? 0,
+    invoiceId: Number(this.invoiceData?.invoiceId),
+    services: this.invoiceData?.services ?? [],
+  };
+  console.log('Saving table services:', tableServices);
   console.log('Processing payment with data:', invoiceUpdateRequest);
 
+  // Lưu dịch vụ của bàn
+  this.invoiceService.saveTableServices(tableServices).subscribe({
+    next: (response) => {
+      console.log('Table services saved successfully:', response);
+    },
+    error: (err) => {
+      console.error('Error saving table services:', err);
+    }
+  });
   this.invoiceService.updateInvoice(invoiceUpdateRequest).subscribe({
     next: (invoiceId) => { // Nhận invoiceId thay vì success
       if (invoiceId > 0) { // Check invoiceId > 0
