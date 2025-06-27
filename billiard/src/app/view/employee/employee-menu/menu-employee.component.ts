@@ -23,8 +23,8 @@ export class MenuEmployeeComponent {
 
   menuItems: MenuItem[] = [
     { id: 'table-management', title: 'Quản lý bàn', icon: '' },
-    { id: 'service-of-table-management', title: 'Dịch vụ của bàn', icon: '' },
-    { id: 'shift-management', title: 'Ca làm việc', icon: '' },
+    { id: 'service-of-table-management', title: 'Quản lý dịch vụ của bàn', icon: '' },
+    { id: 'shift-management', title: 'Quản lý ca làm việc', icon: '' },
     { id: 'service-management', title: 'Quản lý dịch vụ', icon: '' },
   ];
 

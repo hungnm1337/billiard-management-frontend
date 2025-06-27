@@ -27,14 +27,14 @@ export class ServiceOfTableComponent implements OnInit {
   readonly billiardServiceRef = this.billiardService;
 
   async ngOnInit(): Promise<void> {
-    try {
-      await Promise.all([
-        this.billiardService.loadTables(),
-        this.billiardService.loadServices()
-      ]);
-    } catch (error) {
-      console.error('Error loading data:', error);
-    }
+   try {
+    await this.billiardService.initialize();
+
+    console.log('🎯 Component initialized with fresh data');
+
+  } catch (error) {
+    console.error('Error initializing component:', error);
+  }
   }
 
   updateSelectedService(tableId: number, serviceId: string): void {
@@ -77,6 +77,8 @@ export class ServiceOfTableComponent implements OnInit {
   }
 
   getTableServices(tableId: number): Array<Service & { quantity: number }> {
+    // lấy value trong localstorage có key tableService-{{tableId}}
+
     const tableServices = this.billiardService.tableServices()[tableId];
     const allServices = this.serviceService.getCurrentServices();
 

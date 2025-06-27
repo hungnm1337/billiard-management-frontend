@@ -1,8 +1,9 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse,HttpHeaders  } from '@angular/common/http';
 import { Observable, BehaviorSubject, throwError, timer, EMPTY } from 'rxjs';
 import { catchError, retry, tap, switchMap, startWith } from 'rxjs/operators';
-import { BookingTableModel, ChangeStatusTableRequest, Table } from '../../interface/table.interface';
+import { BookingTableModel, ChangeStatusTableRequest, Table, UpdateTableDto } from '../../interface/table.interface';
+import { CreateTableDto } from '../../interface/table.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -16,6 +17,7 @@ export class TableService {
   private loadingSubject = new BehaviorSubject<boolean>(false);
   private errorSubject = new BehaviorSubject<string | null>(null);
   private refreshTimer$ = new BehaviorSubject<boolean>(true);
+  private operationLoadingSubject = new BehaviorSubject<boolean>(false);
 
   public tables$ = this.tablesCache$.asObservable();
   public loading$ = this.loadingSubject.asObservable();
@@ -24,6 +26,67 @@ export class TableService {
   constructor() {
     this.startAutoRefresh();
   }
+
+  getTables(): Table[] {
+    return this.tablesCache$.value;
+  }
+
+ private getHttpOptions() {
+    const token = localStorage.getItem('jwt_token');
+
+    return {
+      headers: new HttpHeaders({
+        'Content-Type': 'application/json',
+        'Authorization': token ? `${token}` : ''
+      })
+    };
+  }
+// Method to create a new table
+  // Method to create a new table - SỬA URL
+// Method to create a new table
+createTable(model: CreateTableDto): Observable<Table> {
+  this.operationLoadingSubject.next(true);
+  return this.http.post<Table>(`${this.API_URL}`, model, this.getHttpOptions()).pipe(
+    tap(() => {
+      this.refreshTables();
+      this.operationLoadingSubject.next(false);
+    }),
+    catchError(error => {
+      this.operationLoadingSubject.next(false);
+      return this.handleError(error);
+    })
+  );
+}
+
+updateTable(tableId: number, model: UpdateTableDto): Observable<void> {
+  this.operationLoadingSubject.next(true);
+  return this.http.put<void>(`${this.API_URL}/${tableId}`, model, this.getHttpOptions()).pipe(
+    tap(() => {
+      this.refreshTables();
+      this.operationLoadingSubject.next(false);
+    }),
+    catchError(error => {
+      this.operationLoadingSubject.next(false);
+      return this.handleError(error);
+    })
+  );
+}
+
+deleteTable(tableId: number): Observable<void> {
+  this.operationLoadingSubject.next(true);
+  return this.http.delete<void>(`${this.API_URL}/${tableId}`, this.getHttpOptions()).pipe(
+    tap(() => {
+      this.refreshTables();
+      this.operationLoadingSubject.next(false);
+    }),
+    catchError(error => {
+      this.operationLoadingSubject.next(false);
+      return this.handleError(error);
+    })
+  );
+}
+
+
 
   bookingTable(model: BookingTableModel): Observable<any> {
     return this.http.post(`${this.API_URL}/booking`, model).pipe(

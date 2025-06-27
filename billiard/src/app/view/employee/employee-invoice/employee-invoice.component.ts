@@ -101,7 +101,6 @@ export class EmployeeInvoiceComponent implements OnInit {
       if (invoiceId > 0) { // Check invoiceId > 0
         console.log('Payment processed successfully, Invoice ID:', invoiceId);
         this.showSuccessMessage(invoiceId);
-        // Clear localStorage
         this.clearTableData();
 
        setTimeout(() => {

@@ -17,6 +17,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:application",
           "options": {
+            "outputHashing": "all"  ,
             "outputPath": "dist/billiard",
             "index": "src/index.html",
             "browser": "src/main.ts",

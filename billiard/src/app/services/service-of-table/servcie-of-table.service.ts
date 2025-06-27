@@ -58,9 +58,47 @@ export class ServiceOfTableService {
   });
 
   constructor() {
-    this.loadAllTableServicesFromStorage();
-    console.log('🚀 ServiceOfTableService initialized');
+
   }
+  // Thêm phương thức helper
+private clearOldDataIfNeeded(): void {
+  const lastClearTime = localStorage.getItem('lastDataClear');
+  const now = Date.now();
+  const ONE_DAY = 24 * 60 * 60 * 1000; // 1 ngày
+
+  if (!lastClearTime || (now - parseInt(lastClearTime)) > ONE_DAY) {
+    console.log('🧹 Clearing old localStorage data...');
+    this.clearAllTableServicesFromStorage();
+    localStorage.setItem('lastDataClear', now.toString());
+  }
+}
+
+// Thêm phương thức initialize mới
+async initialize(): Promise<void> {
+  this.loadingSignal.set(true);
+
+  try {
+    // 1. Clear localStorage cũ nếu cần
+    this.clearOldDataIfNeeded();
+
+    // 2. Load fresh data từ API trước
+    await Promise.all([
+      this.loadTables(),
+      this.loadServices()
+    ]);
+
+    // 3. Sau đó mới load localStorage
+    this.loadAllTableServicesFromStorage();
+
+    console.log('✅ Service initialized successfully');
+
+  } catch (error) {
+    console.error('❌ Error initializing service:', error);
+    this.errorSignal.set('Không thể khởi tạo dịch vụ');
+  } finally {
+    this.loadingSignal.set(false);
+  }
+}
 
   // API calls
   getOpenTables(): Observable<Table[]> {
@@ -423,18 +461,6 @@ export class ServiceOfTableService {
   clearTableServices(tableId: number): void {
     const currentTableServices = this.tableServicesSignal();
     const tableData = currentTableServices[tableId];
-
-    // Trả lại tất cả dịch vụ vào kho
-    if (tableData?.services) {
-      Object.entries(tableData.services).forEach(async ([serviceId, quantity]) => {
-        try {
-          await this.serviceService.increaseQuantity(parseInt(serviceId), quantity).toPromise();
-        } catch (error) {
-          console.error(`Error returning service ${serviceId} to inventory:`, error);
-        }
-      });
-    }
-
     // Xóa dữ liệu bàn khỏi signal
     const updatedAllTableServices = { ...currentTableServices };
     delete updatedAllTableServices[tableId];
@@ -501,4 +527,20 @@ export class ServiceOfTableService {
       this.loadingSignal.set(false);
     }
   }
+  // Thêm vào ServiceOfTableService class
+clearAllTableServicesFromStorage(): void {
+  // Clear signals trước
+  this.tableServicesSignal.set({});
+
+  // Xóa tất cả table services từ localStorage
+  for (let i = localStorage.length - 1; i >= 0; i--) {
+    const key = localStorage.key(i);
+    if (key && (key.startsWith('tableService-') || key.startsWith('TableId-'))) {
+      localStorage.removeItem(key);
+    }
+  }
+
+  console.log('🧹 Cleared all table services from localStorage and signals');
+}
+
 }

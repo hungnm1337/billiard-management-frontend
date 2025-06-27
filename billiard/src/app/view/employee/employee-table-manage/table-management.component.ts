@@ -452,7 +452,13 @@ filteredAndSortedTables = computed(() => {
       second: '2-digit'
     });
   }
+private clearTableData(tableId : number): void {
 
+    localStorage.removeItem(`TableId-${tableId}`);
+    localStorage.removeItem(`table_start_time_${tableId}`);
+    localStorage.removeItem(`tableService-${tableId}`);
+
+}
   // ACTIONS
   selectTable(table: Table): void {
     this.selectedTable.set(table);

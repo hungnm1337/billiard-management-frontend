@@ -1,1 +1,73 @@
-<p>manager works!</p>
+<app-header></app-header>
+<div class="flex h-full">
+  <!-- Sidebar Menu -->
+  <nav class="w-56  bg-white  shadow-md py-6 ">
+    <ul class="list-none p-0 m-0">
+      <li
+        class="px-6 py-4 cursor-pointer transition-colors duration-300"
+        [class.text-blue-600]="isActiveRoute('manager-dashboard')"
+        [class.border-l-4]="isActiveRoute('manager-dashboard')"
+        (click)="navigateTo('manager-dashboard')">
+        <div class="flex items-center">
+          <span class="mr-3"></span>
+          <span>Thống kê</span>
+        </div>
+      </li>
+      <li
+        class="px-6 py-4 cursor-pointer transition-colors duration-300"
+        [class.text-blue-600]="isActiveRoute('manager-tables')"
+        [class.border-l-4]="isActiveRoute('manager-tables')"
+        (click)="navigateTo('manager-tables')">
+        <div class="flex items-center">
+          <span class="mr-3"></span>
+          <span>Quản lý bàn</span>
+        </div>
+      </li>
+      <li
+        class="px-6 py-4 cursor-pointer transition-colors duration-300"
+        [class.text-blue-600]="isActiveRoute('manager-shift')"
+        [class.border-l-4]="isActiveRoute('manager-shift')"
+        (click)="navigateTo('manager-shift')">
+        <div class="flex items-center">
+          <span class="mr-3"></span>
+          <span>Quản lý ca làm</span>
+        </div>
+      </li>
+      <li
+        class="px-6 py-4 cursor-pointer transition-colors duration-300"
+        [class.text-blue-600]="isActiveRoute('manager-service')"
+        [class.border-l-4]="isActiveRoute('manager-service')"
+        (click)="navigateTo('manager-service')">
+        <div class="flex items-center">
+          <span class="mr-3"></span>
+          <span>Quản lý dịch vụ</span>
+        </div>
+      </li>
+      <li
+        class="px-6 py-4 cursor-pointer transition-colors duration-300"
+        [class.text-blue-600]="isActiveRoute('manager-account')"
+        [class.border-l-4]="isActiveRoute('manager-account')"
+        (click)="navigateTo('manager-account')">
+        <div class="flex items-center">
+          <span class="mr-3"></span>
+          <span>Quản lý tài khoản</span>
+        </div>
+      </li>
+      <li
+        class="px-6 py-4 cursor-pointer transition-colors duration-300"
+        [class.text-blue-600]="isActiveRoute('manager-point')"
+        [class.border-l-4]="isActiveRoute('manager-point')"
+        (click)="navigateTo('manager-point')">
+        <div class="flex items-center">
+          <span class="mr-3"></span>
+          <span>Quản lý điểm thưởng</span>
+        </div>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="flex-1 p-8 bg-gray-50">
+    <router-outlet></router-outlet>
+  </div>
+</div>

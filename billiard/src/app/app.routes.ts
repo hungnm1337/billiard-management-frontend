@@ -36,7 +36,18 @@ export const routes: Routes = [
     ]
   },
   {path:"employee-invoice",component:EmployeeInvoiceComponent,title:"Employee Invoice"},
-  {path:"manager",component:ManagerComponent,title:"Manager"},
+  {path:"manager",component:ManagerComponent,title:"Manager"
+    ,
+    children: [
+       { path: '', redirectTo: 'manager-dashboard', pathMatch: 'full' },
+       {path: 'manager-dashboard', loadComponent: () => import('./view/manager/manager-dashboard/manager-dashboard.component').then(c => c.ManagerDashboardComponent) },
+       {path: 'manager-service', loadComponent: () => import('./view/manager/manager-service/manager-service.component').then(c => c.ManagerServiceComponent) },
+       {path: 'manager-shift', loadComponent: () => import('./view/manager/manager-shift/manager-shift.component').then(c => c.ManagerShiftComponent) },
+       {path: 'manager-point', loadComponent: () => import('./view/manager/manager-point/manager-point.component').then(c => c.ManagerPointComponent) },
+       {path: 'manager-tables', loadComponent: () => import('./view/manager/manager-tables/manager-tables.component').then(c => c.ManagerTablesComponent) },
+       {path: 'manager-account',loadComponent: () => import('./view/manager/manager-account/manager-account.component').then(c => c.ManagerAccountComponent) },
+      ]
+  },
   {path:"tablesuser",component:TablesUserComponent,title:"Tables"},
   {path:"profile",component:UserProfileComponent,title:"Profile"},
   {path:"**", component:ErrorComponent}

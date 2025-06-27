@@ -49,3 +49,15 @@ export interface OtpResponse {
   data?: any;
 }
 
+export interface CreateTableDto {
+  tableName: string;
+  status: string;
+  hourlyRate: number;
+}
+
+export interface UpdateTableDto {
+  tableId: number;
+  tableName: string;
+  hourlyRate: number;
+}
+

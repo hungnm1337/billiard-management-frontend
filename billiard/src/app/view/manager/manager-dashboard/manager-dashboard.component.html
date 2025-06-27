@@ -1,0 +1,282 @@
+<!-- manager-dashboard.component.html -->
+<div class="p-6 bg-gray-50 min-h-screen">
+  <!-- Header -->
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-3xl font-bold text-gray-800">Dashboard Doanh Thu</h1>
+    <button
+      (click)="refreshData()"
+      [disabled]="isLoading()"
+      class="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors duration-200 shadow-md hover:shadow-lg">
+      <span class="text-lg" [class.animate-spin]="isLoading()">🔄</span>
+      {{ isLoading() ? 'Đang tải...' : 'Làm mới' }}
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  @if (isLoading()) {
+    <div class="text-center py-12">
+      <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent"></div>
+      <p class="mt-4 text-gray-600 font-medium">Đang tải dữ liệu...</p>
+    </div>
+  }
+
+  <!-- Error Message -->
+  @if (errorMessage()) {
+    <div class="bg-red-50 border-l-4 border-red-400 p-4 mb-6 rounded-r-lg">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center">
+          <span class="text-red-400 mr-3">⚠️</span>
+          <p class="text-red-700 font-medium">{{ errorMessage() }}</p>
+        </div>
+        <button
+          (click)="clearError()"
+          class="text-red-400 hover:text-red-600 transition-colors duration-200">
+          <span class="text-xl">✕</span>
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- Stats Cards -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <!-- Total Revenue -->
+    <div class="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 border border-gray-100">
+      <div class="flex items-center justify-between">
+        <div class="flex-1">
+          <p class="text-sm font-medium text-gray-500 uppercase tracking-wide">Tổng Doanh Thu</p>
+          <p class="text-2xl font-bold text-blue-600 mt-2">
+            {{ formatCurrency(dashboardStats().totalRevenue) }}
+          </p>
+        </div>
+        <div class="bg-blue-100 p-3 rounded-full">
+          <span class="text-2xl">💰</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Total Orders -->
+    <div class="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 border border-gray-100">
+      <div class="flex items-center justify-between">
+        <div class="flex-1">
+          <p class="text-sm font-medium text-gray-500 uppercase tracking-wide">Tổng Đơn Hàng</p>
+          <p class="text-2xl font-bold text-green-600 mt-2">
+            {{ formatNumber(dashboardStats().totalInvoices) }}
+          </p>
+        </div>
+        <div class="bg-green-100 p-3 rounded-full">
+          <span class="text-2xl">📋</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Average Order Value -->
+    <div class="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 border border-gray-100">
+      <div class="flex items-center justify-between">
+        <div class="flex-1">
+          <p class="text-sm font-medium text-gray-500 uppercase tracking-wide">Giá Trị TB/Đơn</p>
+          <p class="text-2xl font-bold text-purple-600 mt-2">
+            {{ formatCurrency(dashboardStats().averageOrderValue) }}
+          </p>
+        </div>
+        <div class="bg-purple-100 p-3 rounded-full">
+          <span class="text-2xl">📊</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Monthly Growth -->
+    <div class="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 border border-gray-100">
+      <div class="flex items-center justify-between">
+        <div class="flex-1">
+          <p class="text-sm font-medium text-gray-500 uppercase tracking-wide">Tăng Trưởng Tháng</p>
+          <div class="flex items-center mt-2">
+            <span class="text-lg mr-2">{{ getGrowthIcon(dashboardStats().monthlyGrowth) }}</span>
+            <p class="text-2xl font-bold" [class]="getGrowthClass(dashboardStats().monthlyGrowth)">
+              {{ dashboardStats().monthlyGrowth.toFixed(1) }}%
+            </p>
+          </div>
+        </div>
+        <div class="bg-indigo-100 p-3 rounded-full">
+          <span class="text-2xl">📈</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts Row -->
+  <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-8">
+    <!-- Monthly Revenue Chart -->
+    <div class="bg-white p-6 rounded-xl shadow-md border border-gray-100">
+      <div class="flex items-center justify-between mb-6">
+        <h3 class="text-xl font-semibold text-gray-800">Doanh Thu Theo Tháng</h3>
+        <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+          {{ monthlyRevenue().length }} tháng
+        </span>
+      </div>
+
+      <div class="h-80 flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg">
+        @if (monthlyRevenue().length > 0) {
+          <div class="w-full p-4">
+            <div class="space-y-3">
+              @for (item of monthlyRevenue(); track item.month) {
+                <div class="flex justify-between items-center p-3 bg-white rounded-lg shadow-sm">
+                  <span class="text-sm font-medium text-gray-700">{{ item.month }}</span>
+                  <div class="text-right">
+                    <p class="text-sm font-bold text-blue-600">{{ formatCurrency(item.revenue) }}</p>
+                    <p class="text-xs text-gray-500">{{ item.invoiceCount }} đơn</p>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        } @else {
+          <div class="text-center">
+            <span class="text-4xl mb-4 block">📊</span>
+            <p class="text-gray-500 font-medium">Chưa có dữ liệu doanh thu</p>
+            <p class="text-gray-400 text-sm mt-1">Dữ liệu sẽ hiển thị khi có giao dịch</p>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Daily Revenue Chart -->
+    <div class="bg-white p-6 rounded-xl shadow-md border border-gray-100">
+      <div class="flex items-center justify-between mb-6">
+        <h3 class="text-xl font-semibold text-gray-800">Doanh Thu 30 Ngày Gần Đây</h3>
+        <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+          {{ dailyRevenue().length }} ngày
+        </span>
+      </div>
+
+      <div class="h-80 overflow-y-auto bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg">
+        @if (dailyRevenue().length > 0) {
+          <div class="p-4 space-y-2">
+            @for (item of dailyRevenue(); track item.date) {
+              <div class="flex justify-between items-center p-2 bg-white rounded shadow-sm">
+                <span class="text-xs text-gray-600">{{ item.date | date:'dd/MM' }}</span>
+                <div class="text-right">
+                  <p class="text-xs font-bold text-green-600">{{ formatCurrency(item.revenue) }}</p>
+                  <p class="text-xs text-gray-500">{{ item.invoiceCount }} đơn</p>
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="text-center py-20">
+            <span class="text-4xl mb-4 block">📈</span>
+            <p class="text-gray-500 font-medium">Chưa có dữ liệu hàng ngày</p>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Row -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Payment Methods -->
+    <div class="bg-white p-6 rounded-xl shadow-md border border-gray-100">
+      <div class="flex items-center justify-between mb-6">
+        <h3 class="text-xl font-semibold text-gray-800">Phương Thức Thanh Toán</h3>
+        <span class="text-2xl">💳</span>
+      </div>
+
+      @if (paymentMethodStats().length > 0) {
+        <div class="space-y-4">
+          @for (payment of paymentMethodStats(); track payment.method) {
+            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+              <div class="flex items-center space-x-3">
+                <div class="w-3 h-3 rounded-full bg-gradient-to-r from-blue-400 to-blue-600"></div>
+                <span class="text-sm font-medium text-gray-700">{{ payment.method }}</span>
+              </div>
+              <div class="text-right">
+                <p class="text-sm font-bold text-gray-900">{{ formatCurrency(payment.amount) }}</p>
+                <p class="text-xs text-gray-500">{{ payment.percentage.toFixed(1) }}% • {{ payment.count }} đơn</p>
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="text-center py-8">
+          <span class="text-3xl block mb-2">💳</span>
+          <p class="text-gray-500">Chưa có dữ liệu thanh toán</p>
+        </div>
+      }
+    </div>
+
+    <!-- Top Tables -->
+    <div class="bg-white p-6 rounded-xl shadow-md border border-gray-100">
+      <div class="flex items-center justify-between mb-6">
+        <h3 class="text-xl font-semibold text-gray-800">Top 5 Bàn Doanh Thu</h3>
+        <span class="text-2xl">🏆</span>
+      </div>
+
+      @if (topTables().length > 0) {
+        <div class="space-y-4">
+          @for (table of topTables(); track table.tableId; let i = $index) {
+            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+              <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                  {{ i + 1 }}
+                </div>
+                <span class="text-sm font-medium text-gray-700">Bàn {{ table.tableId }}</span>
+              </div>
+              <div class="text-right">
+                <p class="text-sm font-bold text-gray-900">{{ formatCurrency(table.revenue) }}</p>
+                <p class="text-xs text-gray-500">{{ table.orderCount }} đơn hàng</p>
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="text-center py-8">
+          <span class="text-3xl block mb-2">🪑</span>
+          <p class="text-gray-500">Chưa có dữ liệu bàn</p>
+        </div>
+      }
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="bg-white p-6 rounded-xl shadow-md border border-gray-100">
+      <div class="flex items-center justify-between mb-6">
+        <h3 class="text-xl font-semibold text-gray-800">Thống Kê Nhanh</h3>
+        <span class="text-2xl">⚡</span>
+      </div>
+
+      <div class="space-y-6">
+        <div class="flex items-center justify-between p-4 bg-gradient-to-r from-orange-50 to-orange-100 rounded-lg">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center">
+              <span class="text-white text-lg">🎮</span>
+            </div>
+            <span class="text-sm font-medium text-gray-700">Đơn đang chơi</span>
+          </div>
+          <span class="text-xl font-bold text-orange-600">{{ dashboardStats().activeOrders }}</span>
+        </div>
+
+        <div class="flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-green-100 rounded-lg">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+              <span class="text-white text-lg">💵</span>
+            </div>
+            <span class="text-sm font-medium text-gray-700">Doanh thu hôm nay</span>
+          </div>
+          <span class="text-lg font-bold text-green-600">
+            {{ formatCurrency(getTodayRevenue()) }}
+          </span>
+        </div>
+
+        <div class="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+              <span class="text-white text-lg">📝</span>
+            </div>
+            <span class="text-sm font-medium text-gray-700">Đơn hôm nay</span>
+          </div>
+          <span class="text-lg font-bold text-blue-600">
+            {{ getTodayOrders() }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
