@@ -1,42 +1,56 @@
-// account.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-export interface Account {
-  accountId: number;
-  username: string;
-  password: string; // Hashed password
-  status: 'ACTIVE' | 'BAN';
-  users: User[];
-}
-
 export interface User {
   userId: number;
   name: string;
-  email: string;
   accountId: number;
+  roleId: number;
+  dob: string;
+  invoiceEmployees: any[];
+  invoiceUsers: any[];
+  orderTables: any[];
+  rewardPoints: any[];
+  role: any;
+  salaries: any[];
+  shiftAssignments: any[];
 }
 
-export interface ApiResponse<T> {
-  success: boolean;
-  message: string;
-  data?: T;
+export interface Account {
+  accountId: number;
+  username: string;
+  password: string;
+  status: string;
+  users: User[];
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class AccountService {
-  private readonly apiUrl = 'https://localhost:7176/api/account';
+  private apiUrl = 'https://localhost:7176/api/Account';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   getAccounts(): Observable<Account[]> {
     return this.http.get<Account[]>(this.apiUrl);
   }
 
-  changeStatusAccount(accountId: number): Observable<ApiResponse<boolean>> {
-    return this.http.put<ApiResponse<boolean>>(`${this.apiUrl}/${accountId}/status`, {});
+  changeAccountStatus(accountId: number): Observable<boolean> {
+    return this.http.put<boolean>(`${this.apiUrl}/${accountId}/status`, {});
+  }
+
+  getRoleName(roleId: number): string {
+    switch (roleId) {
+      case 1: return 'User';
+      case 2: return 'Employee';
+      case 3: return 'Manager';
+      default: return 'Unknown';
+    }
+  }
+
+  getStatusColor(status: string): string {
+    return status === 'ACTIVE' ? 'text-green-600 bg-green-100' : 'text-red-600 bg-red-100';
   }
 }

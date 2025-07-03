@@ -10,6 +10,13 @@ export interface Service {
   invoiceDetails: any[];
 }
 
+export interface ServiceModel {
+  serviceId: number;
+  serviceName: string;
+  price: number;
+  quantity: number;
+}
+
 export interface ServiceStatus {
   status: 'available' | 'low-stock' | 'out-of-stock';
   label: string;
@@ -96,4 +103,13 @@ export class ServiceService {
   getCurrentServices(): Service[] {
     return this.servicesSubject.value;
   }
+
+  createNewService(service: ServiceModel): Observable<boolean> {
+    return this.http.post<boolean>(`${this.API_BASE}/Service`, service)
+  }
+
+  updateService(service: ServiceModel): Observable<boolean> {
+    return this.http.put<boolean>(`${this.API_BASE}/Service/update/${service.serviceId}`, service);
+  }
+
 }

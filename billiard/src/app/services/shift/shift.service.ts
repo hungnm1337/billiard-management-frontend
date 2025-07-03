@@ -2,6 +2,13 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 
+export interface createShift {
+  employeeId: number;
+  shiftId: number;
+  day: string;
+  status: "Pending";
+}
+
 export interface ShiftAssignment {
   id: number;
   employeeId: number;
@@ -44,7 +51,7 @@ export class ShiftService {
   }
 
   getShifts(): Observable<Shift[]> {
-    return this.http.get<Shift[]>(`${this.API_BASE}/Shifts`);
+    return this.http.get<Shift[]>(`${this.API_BASE}/Shift`);
   }
 
   getEmployeeShiftAssignments(employeeId: number): Observable<ShiftAssignment[]> {
@@ -62,5 +69,24 @@ updateShiftAssignmentStatus(assignmentId: number, status: string): Observable<an
 
   getDisplayTime(startTime: string, endTime: string): string {
     return `${startTime} - ${endTime}`;
+  }
+
+  // Thêm mới ca làm (manager)
+  createShift(shift: createShift): Observable<any> {
+    return this.http.post(`${this.API_BASE}/Shift`, shift, {
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+
+  // Xóa ca làm (manager)
+  deleteShift(shiftId: number): Observable<any> {
+    return this.http.delete(`${this.API_BASE}/Shifts/${shiftId}`);
+  }
+
+  // Tạo mới assignment (phân ca cho nhân viên)
+  createShiftAssignment(assignment: { day: string; employeeId: number; shiftId: number }): Observable<any> {
+    return this.http.post(`${this.API_BASE}/ShiftAssignment`, assignment, {
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 }

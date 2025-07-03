@@ -1,229 +1,127 @@
-<!-- account-management.component.html -->
-<div class="container mx-auto p-6 max-w-7xl">
-  <!-- Header -->
-  <div class="mb-8">
-    <h1 class="text-3xl font-bold text-gray-900 mb-2">Quản lý tài khoản</h1>
-    <p class="text-gray-600">Danh sách và quản lý tài khoản trong hệ thống</p>
-  </div>
-
-  <!-- Search and Actions -->
-  <div class="mb-6 flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
-    <div class="relative flex-1 max-w-md">
-      <input
-        type="text"
-        placeholder="Tìm kiếm theo username..."
-        class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        [value]="searchTerm()"
-        (input)="searchTerm.set($any($event.target).value)"
-      />
-      <svg class="absolute left-3 top-2.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-      </svg>
+<div class="p-6 bg-gray-50 min-h-screen">
+  <div class="bg-white rounded-lg shadow-lg">
+    <!-- Header -->
+    <div class="px-6 py-4 border-b border-gray-200">
+      <h2 class="text-2xl font-bold text-gray-800">Danh sách tài khoản</h2>
+      <p class="text-gray-600 mt-1">Quản lý tài khoản người dùng trong hệ thống</p>
     </div>
 
-    <button
-      (click)="loadAccounts()"
-      class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center gap-2"
-      [disabled]="isLoading()"
-    >
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-      </svg>
-      Làm mới
-    </button>
-  </div>
+    <!-- Loading State -->
+    @if (loading) {
+      <div class="flex justify-center items-center py-12">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <span class="ml-2 text-gray-600">Đang tải...</span>
+      </div>
+    }
 
-  <!-- Loading State với @if -->
-  @if (isLoading()) {
-    <div class="flex justify-center items-center py-12">
-      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      <span class="ml-2 text-gray-600">Đang tải...</span>
-    </div>
-  }
+    <!-- Error State -->
+    @if (error) {
+      <div class="mx-6 my-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+        {{ error }}
+        <button
+          (click)="loadAccounts()"
+          class="ml-4 px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition-colors">
+          Thử lại
+        </button>
+      </div>
+    }
 
-  <!-- Accounts Table với @if -->
-  @if (!isLoading()) {
-    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+    <!-- Accounts Table -->
+    @if (!loading && !error) {
       <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200">
           <thead class="bg-gray-50">
             <tr>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Tài khoản
+                ID
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Username
+                Tên đăng nhập
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Người dùng
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Vai trò
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Ngày sinh
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Trạng thái
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Số người dùng
-              </th>
-              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Thao tác
               </th>
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
-            @for (account of filteredAccounts(); track account.accountId) {
-              <!-- @let directive để tạo biến local -->
-              @let displayName = getDisplayName(account.username);
-              @let avatarInitial = getAvatarInitial(account.username);
-              @let statusClass = getStatusClass(account.status);
-              @let statusText = getStatusText(account.status);
-              @let userCount = account.users.length || 0;
-              @let isActive = account.status === 'ACTIVE';
-
-              <tr class="hover:bg-gray-50 transition-colors duration-150">
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="flex items-center">
-                    <div class="flex-shrink-0 h-10 w-10">
-                      <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                        <span class="text-blue-600 font-medium text-sm">
-                          {{ avatarInitial }}
-                        </span>
-                      </div>
-                    </div>
-                    <div class="ml-4">
-                      <div class="text-sm font-medium text-gray-900">{{ displayName }}</div>
-                      <div class="text-sm text-gray-500">ID: {{ account.accountId }}</div>
-                    </div>
-                  </div>
+            @for (account of accounts; track account.accountId) {
+              <tr class="hover:bg-gray-50 transition-colors">
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  {{ account.accountId }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-gray-900">{{ account.username }}</div>
+                  <div class="text-sm font-medium text-gray-900">{{ account.username }}</div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <span [class]="statusClass">
-                    {{ statusText }}
-                  </span>
+                  @for (user of account.users; track user.userId) {
+                    <div class="text-sm text-gray-900">
+                      <div class="font-medium">{{ user.name }}</div>
+                      <div class="text-gray-500 text-xs">ID: {{ user.userId }}</div>
+                    </div>
+                  }
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  @for (user of account.users; track user.userId) {
+                    <div class="text-sm">
+                      <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
+                            [class]="getRoleColorClass(user.roleId)">
+                        {{ getRoleName(user.roleId) }}
+                      </span>
+                    </div>
+                  }
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {{ userCount }}
+                  @for (user of account.users; track user.userId) {
+                    <div>
+                      {{ formatDate(user.dob) }}
+                    </div>
+                  }
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <div class="flex justify-end gap-2">
-                    <button
-                      (click)="viewAccountDetail(account)"
-                      class="text-blue-600 hover:text-blue-900 px-3 py-1 rounded-md hover:bg-blue-50 transition-colors duration-200"
-                    >
-                      Xem chi tiết
-                    </button>
-                    <button
-                      (click)="toggleAccountStatus(account)"
-                      [class]="isActive
-                        ? 'text-red-600 hover:text-red-900 hover:bg-red-50'
-                        : 'text-green-600 hover:text-green-900 hover:bg-green-50'"
-                      class="px-3 py-1 rounded-md transition-colors duration-200"
-                    >
-                      {{ isActive ? 'Khóa' : 'Kích hoạt' }}
-                    </button>
-                  </div>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
+                        [class]="getStatusColor(account.status)">
+                    {{ account.status }}
+                  </span>
                 </td>
-              </tr>
-            } @empty {
-              <!-- Empty State với @empty -->
-              <tr>
-                <td colspan="5" class="text-center py-12">
-                  <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2M4 13h2m13-8V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v1M7 8h10"></path>
-                  </svg>
-                  <h3 class="mt-2 text-sm font-medium text-gray-900">Không có tài khoản</h3>
-                  <p class="mt-1 text-sm text-gray-500">Không tìm thấy tài khoản nào phù hợp với tìm kiếm.</p>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <button
+
+                    (click)="changeAccountStatus(account.accountId)"
+                    class="px-4 py-2 w-32 rounded-md text-sm font-medium transition-colors"
+                    [class]="getActionButtonClass(account.status)">
+                    {{ account.status === 'ACTIVE' ? 'Khóa' : 'Kích hoạt' }}
+                  </button>
                 </td>
               </tr>
             }
           </tbody>
         </table>
       </div>
-    </div>
-  }
+    }
 
-  <!-- Detail Modal với @if -->
-  @if (showDetailModal()) {
-    <!-- @let cho selected account -->
-    @let selectedAcc = selectedAccount()!;
-    @let selectedDisplayName = getDisplayName(selectedAcc.username);
-    @let selectedStatusClass = getStatusClass(selectedAcc.status);
-    @let selectedStatusText = getStatusText(selectedAcc.status);
-    @let selectedIsActive = selectedAcc.status === 'ACTIVE';
-
-    <div class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
-         (click)="closeDetailModal()">
-      <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white"
-           (click)="$event.stopPropagation()">
-
-        <!-- Modal Header -->
-        <div class="flex items-center justify-between pb-4 border-b">
-          <h3 class="text-lg font-medium text-gray-900">Chi tiết tài khoản</h3>
-          <button (click)="closeDetailModal()"
-                  class="text-gray-400 hover:text-gray-600 transition-colors duration-200">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-          </button>
-        </div>
-
-        <!-- Modal Content -->
-        <div class="mt-4">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Tên hiển thị</label>
-              <p class="text-sm text-gray-900 bg-gray-50 p-2 rounded">{{ selectedDisplayName }}</p>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
-              <p class="text-sm text-gray-900 bg-gray-50 p-2 rounded">{{ selectedAcc.username }}</p>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Account ID</label>
-              <p class="text-sm text-gray-900 bg-gray-50 p-2 rounded">{{ selectedAcc.accountId }}</p>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Trạng thái</label>
-              <span [class]="selectedStatusClass">
-                {{ selectedStatusText }}
-              </span>
-            </div>
-          </div>
-
-          <!-- Users List với @if/@else -->
-          @if (selectedAcc.users && selectedAcc.users.length > 0) {
-            <h4 class="text-md font-medium text-gray-900 mb-3">Danh sách người dùng</h4>
-            <div class="bg-gray-50 rounded-lg p-4 max-h-60 overflow-y-auto">
-              @for (user of selectedAcc.users; track user.userId) {
-                <div class="flex justify-between items-center py-2 border-b border-gray-200 last:border-b-0">
-                  <div>
-                    <p class="text-sm font-medium text-gray-900">{{ user.name }}</p>
-                    <p class="text-xs text-gray-500">{{ user.email }}</p>
-                  </div>
-                  <span class="text-xs text-gray-400">ID: {{ user.userId }}</span>
-                </div>
-              }
-            </div>
-          } @else {
-            <div class="bg-gray-50 rounded-lg p-4 text-center">
-              <p class="text-sm text-gray-500">Chưa có người dùng nào được gán cho tài khoản này</p>
-            </div>
-          }
-
-          <!-- Actions -->
-          <div class="mt-6 flex justify-end gap-3">
-            <button (click)="closeDetailModal()"
-                    class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors duration-200">
-              Đóng
-            </button>
-            <button (click)="toggleAccountStatus(selectedAcc)"
-                    [class]="selectedIsActive
-                      ? 'bg-red-600 hover:bg-red-700 text-white'
-                      : 'bg-green-600 hover:bg-green-700 text-white'"
-                    class="px-4 py-2 text-sm font-medium rounded-md transition-colors duration-200">
-              {{ selectedIsActive ? 'Khóa tài khoản' : 'Kích hoạt tài khoản' }}
-            </button>
-          </div>
+    <!-- Empty State -->
+    @if (!loading && !error && accounts.length === 0) {
+      <div class="text-center py-12">
+        <div class="text-gray-500">
+          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-2.25" />
+          </svg>
+          <h3 class="mt-2 text-sm font-medium text-gray-900">Không có tài khoản</h3>
+          <p class="mt-1 text-sm text-gray-500">Chưa có tài khoản nào trong hệ thống.</p>
         </div>
       </div>
-    </div>
-  }
+    }
+  </div>
 </div>

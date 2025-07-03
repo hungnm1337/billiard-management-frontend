@@ -11,20 +11,9 @@ import { AccountService, Account } from '../../../services/account/account.servi
   styleUrl: './manager-account.component.scss'
 })
 export class ManagerAccountComponent implements OnInit {
- // Signals for reactive state management
-  accounts = signal<Account[]>([]);
-  selectedAccount = signal<Account | null>(null);
-  isLoading = signal(false);
-  searchTerm = signal('');
-  showDetailModal = signal(false);
-
-  // Computed signal for filtered accounts
-  filteredAccounts = computed(() => {
-    const term = this.searchTerm().toLowerCase();
-    return this.accounts().filter(account =>
-      account.username.toLowerCase().includes(term)
-    );
-  });
+   accounts: Account[] = [];
+  loading = false;
+  error: string | null = null;
 
   constructor(private accountService: AccountService) {}
 
@@ -33,83 +22,62 @@ export class ManagerAccountComponent implements OnInit {
   }
 
   loadAccounts(): void {
-    this.isLoading.set(true);
+    this.loading = true;
+    this.error = null;
+
     this.accountService.getAccounts().subscribe({
-      next: (accounts) => {
-        this.accounts.set(accounts);
-        this.isLoading.set(false);
+      next: (data) => {
+        this.accounts = data;
+        this.loading = false;
       },
-      error: (error) => {
-        console.error('Error loading accounts:', error);
-        this.isLoading.set(false);
+      error: (err) => {
+        this.error = 'Không thể tải danh sách tài khoản';
+        this.loading = false;
+        console.error('Error loading accounts:', err);
       }
     });
   }
 
-  viewAccountDetail(account: Account): void {
-    this.selectedAccount.set(account);
-    this.showDetailModal.set(true);
-  }
-
-  closeDetailModal(): void {
-    this.showDetailModal.set(false);
-    this.selectedAccount.set(null);
-  }
-
-  toggleAccountStatus(account: Account): void {
-    this.isLoading.set(true);
-    this.accountService.changeStatusAccount(account.accountId).subscribe({
-      next: (response) => {
-        if (response.success) {
-          // Update local state - toggle between ACTIVE and INACTIVE
-          const newStatus = account.status === 'ACTIVE' ? 'BAN' : 'ACTIVE';
-          const updatedAccounts = this.accounts().map(acc =>
-            acc.accountId === account.accountId
-              ? { ...acc, status: newStatus as 'ACTIVE' | 'BAN' }
-              : acc
-          );
-          this.accounts.set(updatedAccounts);
-
-          // Update selected account if it's the same one
-          if (this.selectedAccount()?.accountId === account.accountId) {
-            this.selectedAccount.set({ ...account, status: newStatus as 'ACTIVE' | 'BAN' });
-          }
+  changeAccountStatus(accountId: number): void {
+    this.accountService.changeAccountStatus(accountId).subscribe({
+      next: (success) => {
+        if (success) {
+          this.loadAccounts();
+        } else {
+          this.error = 'Không thể thay đổi trạng thái tài khoản';
         }
-        this.isLoading.set(false);
       },
-      error: (error) => {
-        console.error('Error changing account status:', error);
-        this.isLoading.set(false);
+      error: (err) => {
+        this.error = 'Lỗi khi thay đổi trạng thái tài khoản';
+        console.error('Error changing account status:', err);
       }
     });
   }
 
-  getStatusText(status: string): string {
-    return status === 'ACTIVE' ? 'Hoạt động' : 'Tạm khóa';
+  getRoleName(roleId: number): string {
+    return this.accountService.getRoleName(roleId);
   }
 
-  getStatusClass(status: string): string {
-    return status === 'ACTIVE'
-      ? 'bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium'
-      : 'bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-medium';
+  getStatusColor(status: string): string {
+    return this.accountService.getStatusColor(status);
   }
 
-  trackByAccountId(index: number, account: Account): number {
-    return account.accountId;
-  }
-
-  // Helper method to get display name from username
-  getDisplayName(username: string): string {
-    // Extract name from email if it's an email format
-    if (username.includes('@')) {
-      return username.split('@')[0];
+  getRoleColorClass(roleId: number): string {
+    switch (roleId) {
+      case 1: return 'bg-blue-100 text-blue-800';
+      case 2: return 'bg-green-100 text-green-800';
+      case 3: return 'bg-purple-100 text-purple-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
-    return username;
   }
 
-  // Helper method to get avatar initial
-  getAvatarInitial(username: string): string {
-    const displayName = this.getDisplayName(username);
-    return displayName.charAt(0).toUpperCase();
+  getActionButtonClass(status: string): string {
+    return status === 'ACTIVE'
+      ? 'bg-red-600 hover:bg-red-700 text-white'
+      : 'bg-green-600 hover:bg-green-700 text-white';
+  }
+
+  formatDate(dateString: string): string {
+    return new Date(dateString).toLocaleDateString('vi-VN');
   }
 }

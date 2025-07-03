@@ -3,6 +3,7 @@ import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RewardPointService, RewardPoint, CreateRewardPointDto, AddPointsDto, DeductPointsDto } from '../../../services/RewardPoint/reward-point.service';
+import { UserService, User } from '../../../services/user/user.service';
 
 @Component({
   selector: 'app-manager-point',
@@ -41,12 +42,19 @@ export class ManagerPointComponent implements OnInit {
   searchUserId: number | null = null;
   currentEditingId: number | null = null;
 
+  // ============ ADDITIONAL DATA ============
+  users: User[] = [];
+
   // ✅ Inject Service thay vì HttpClient
-  constructor(private rewardPointService: RewardPointService) {}
+  constructor(private rewardPointService: RewardPointService, private userService: UserService) {}
 
   ngOnInit(): void {
     this.loadAllRewardPoints();
     this.subscribeToRewardPoints();
+    // Lấy danh sách user role=1
+    this.userService.getUsersByRole(1).subscribe(users => {
+      this.users = users;
+    });
   }
 
   // ============ SUBSCRIBE TO SERVICE ============
@@ -320,5 +328,10 @@ export class ManagerPointComponent implements OnInit {
 
   get hasNoData(): boolean {
     return this.filteredPoints().length === 0 && !this.isLoading();
+  }
+
+  getUserNameById(userId: number): string {
+    const user = this.users.find(u => u.userId === userId);
+    return user ? user.name : 'Không rõ';
   }
 }

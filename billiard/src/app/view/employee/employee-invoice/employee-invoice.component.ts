@@ -3,6 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { InvoiceService, InvoiceUpdateRequest ,ServiceOfTable ,ServiceItem,InvoiceData} from '../../../services/invoice/invoice.service';
+import { UserService } from '../../../services/user/user.service';
+import { AccountService, Account } from '../../../services/account/account.service';
+import { RewardPointService } from '../../../services/RewardPoint/reward-point.service';
 
 
 @Component({
@@ -18,7 +21,18 @@ export class EmployeeInvoiceComponent implements OnInit {
   qrCodeUrl: string = '';
   showSuccessNotification = false;
   notificationMessage = '';
-  constructor(private router: Router, private invoiceService: InvoiceService) {
+  userNameInput: string = '';
+  foundUser: any = null;
+  accounts: Account[] = [];
+  filteredAccountSuggestions: Account[] = [];
+  userCurrentPoints: number | null = null;
+  constructor(
+    private router: Router,
+    private invoiceService: InvoiceService,
+    private userService: UserService,
+    private accountService: AccountService,
+    private rewardPointService: RewardPointService
+  ) {
     // Lấy data từ navigation state
     const navigation = this.router.getCurrentNavigation();
     if (navigation?.extras.state) {
@@ -32,7 +46,11 @@ export class EmployeeInvoiceComponent implements OnInit {
       this.router.navigate(['/employee/table-management']);
       return;
     }
-
+    // Lấy danh sách account
+    this.accountService.getAccounts().subscribe(accounts => {
+      this.accounts = accounts;
+      console.log('Danh sách account:', accounts);
+    });
     // Generate QR code nếu chọn thanh toán online
     this.generateQRCode();
   }
@@ -51,17 +69,17 @@ export class EmployeeInvoiceComponent implements OnInit {
 
   // Tính tổng tiền
   getTotalAmount(): number {
-    if (!this.invoiceData) return 0;
-    return this.invoiceData.tableTotalCost + this.invoiceData.servicesTotalCost;
-  }
+  if (!this.invoiceData) return 0;
+  const total = this.invoiceData.tableTotalCost + this.invoiceData.servicesTotalCost;
+  return Number(total.toFixed(3));
+}
+
 
   // Generate QR code cho thanh toán online
   generateQRCode(): void {
     if (this.paymentMethod === 'online') {
       const amount = this.getTotalAmount();
       const content = `Thanh toán hóa đơn bàn ${this.invoiceData?.tableName} - Số tiền: ${amount.toLocaleString('vi-VN')}đ`;
-      // Sử dụng API tạo QR code hoặc thư viện
-      this.qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(content)}`;
     }
   }
 
@@ -139,5 +157,74 @@ private clearTableData(): void {
   // Quay lại
   goBack(): void {
     this.router.navigate(['/employee/table-management']);
+  }
+
+  searchUserByName() {
+    if (!this.userNameInput.trim()) {
+      console.log('Vui lòng nhập tên');
+      this.foundUser = null;
+      this.filteredAccountSuggestions = [];
+      this.userCurrentPoints = null;
+      return;
+    }
+    this.userService.getUserByName(this.userNameInput.trim()).subscribe({
+      next: (user) => {
+        console.log('Kết quả tìm user:', user);
+        this.foundUser = user;
+        this.filteredAccountSuggestions = [];
+        this.addRewardPointsForUser();
+        // Lấy điểm hiện tại
+        if (user.userId) {
+          this.userCurrentPoints = null;
+          this.rewardPointService.getUserPoints(user.userId).subscribe({
+            next: (res) => {
+              this.userCurrentPoints = res.points;
+            },
+            error: (err) => {
+              this.userCurrentPoints = null;
+            }
+          });
+        }
+      },
+      error: (err) => {
+        console.error('Không tìm thấy user hoặc lỗi:', err);
+        this.foundUser = null;
+        this.filteredAccountSuggestions = [];
+        this.userCurrentPoints = null;
+      }
+    });
+  }
+
+  getRewardPoint(): number {
+    const total = this.getTotalAmount();
+    let point = Math.round(total * 0.001);
+    if (point < 100) point = 100;
+    return point;
+  }
+
+  onUserNameInputChange() {
+    const keyword = this.userNameInput.trim().toLowerCase();
+    if (!keyword) {
+      this.filteredAccountSuggestions = [];
+      return;
+    }
+    this.filteredAccountSuggestions = this.accounts.filter(acc => acc.username.toLowerCase().includes(keyword));
+  }
+
+  addRewardPointsForUser() {
+    if (!this.foundUser || !this.foundUser.userId) return;
+    const points = this.getRewardPoint();
+    this.rewardPointService.addPoints({
+      userId: this.foundUser.userId,
+      pointsToAdd: points,
+      description: `Điểm thưởng cho hóa đơn ${this.invoiceData?.invoiceId || ''}`
+    }).subscribe({
+      next: (res) => {
+        console.log('Đã cộng điểm thưởng:', res);
+      },
+      error: (err) => {
+        console.error('Lỗi cộng điểm thưởng:', err);
+      }
+    });
   }
 }
