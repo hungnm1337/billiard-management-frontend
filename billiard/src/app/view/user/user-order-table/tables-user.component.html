@@ -307,12 +307,21 @@
             <!-- Action Button -->
             <div class="mt-4">
               @if (table.status === 'Đang trống') {
-                <button
-                  (click)="bookTable(table); $event.stopPropagation()"
-                  class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center">
-                  <i class="fas fa-calendar-plus mr-2"></i>
-                  Đặt bàn ngay
-                </button>
+                @if (bookingLoading() === table.tableId) {
+                  <button
+                    disabled
+                    class="w-full bg-emerald-600 text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center opacity-75">
+                    <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Đang đặt bàn...
+                  </button>
+                } @else {
+                  <button
+                    (click)="bookTable(table); $event.stopPropagation()"
+                    class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center">
+                    <i class="fas fa-calendar-plus mr-2"></i>
+                    Đặt bàn ngay
+                  </button>
+                }
               } @else {
                 <button
                   disabled
@@ -414,12 +423,21 @@
           </div>
 
           @if (selectedTable()!.status === 'Đang trống') {
-            <button
-              (click)="bookTable(selectedTable()!)"
-              class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-lg transition-colors flex items-center justify-center">
-              <i class="fas fa-calendar-plus mr-2"></i>
-              Đặt bàn ngay
-            </button>
+            @if (bookingLoading() === selectedTable()!.tableId) {
+              <button
+                disabled
+                class="w-full bg-emerald-600 text-white font-bold py-3 px-6 rounded-lg flex items-center justify-center opacity-75">
+                <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                Đang đặt bàn...
+              </button>
+            } @else {
+              <button
+                (click)="bookTable(selectedTable()!)"
+                class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-lg transition-colors flex items-center justify-center">
+                <i class="fas fa-calendar-plus mr-2"></i>
+                Đặt bàn ngay
+              </button>
+            }
              <button
                 (click)="clearSelection()"
                 class="bg-gray-500 w-full mt-4 hover:bg-gray-600 text-white font-medium py-2 px-6 rounded-lg transition-colors">

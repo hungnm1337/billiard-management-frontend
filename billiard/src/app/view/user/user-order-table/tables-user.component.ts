@@ -26,6 +26,7 @@ export class TablesUserComponent implements OnInit {
   currentOrderId = signal(0);
   allTables = signal<Table[]>([]);
   isLoading = signal(false);
+  bookingLoading = signal<number | null>(null); // Track which table is being booked
   private tableService = inject(TableService);
   private destroyRef = inject(DestroyRef);
   // filteredAndSortedTables is defined later with full filtering and sorting logic.
@@ -334,6 +335,9 @@ bookTable(table: Table) {
   }
   console.log(`User ID: ${userId} attempting to book Table ID: ${table.tableId}`);
 
+  // Set loading state for this specific table
+  this.bookingLoading.set(table.tableId);
+
   // 4. Gọi API đặt bàn
   // Giả định this.tableService.bookTable trả về trực tiếp ID (là một số)
   this.tableService.bookTable(table.tableId, Number(userId)).subscribe({
@@ -355,6 +359,9 @@ bookTable(table: Table) {
       this.otpService.sendOtp(orderId).subscribe({
         next: (otpSendApiResponse) => {
           console.log('OTP Send API Response:', otpSendApiResponse);
+
+          // Clear loading state
+          this.bookingLoading.set(null);
 
           // 7. Lưu trữ response gửi OTP vào localStorage
           try {
@@ -379,6 +386,7 @@ bookTable(table: Table) {
           const errorMessage = otpSendError.error?.message || otpSendError.message || 'Không thể gửi mã OTP. Vui lòng thử lại sau.';
           alert('Lỗi gửi OTP: ' + errorMessage);
           this.currentOrderId.set(0); // Reset Order ID nếu gửi OTP thất bại
+          this.bookingLoading.set(null); // Clear loading state on error
         }
       });
     },
@@ -387,6 +395,7 @@ bookTable(table: Table) {
       const errorMessage = bookingApiError.error?.message || bookingApiError.message || 'Không thể hoàn tất việc đặt bàn. Vui lòng thử lại.';
       alert('Đặt bàn không thành công: ' + errorMessage);
       this.currentOrderId.set(0); // Reset Order ID nếu đặt bàn thất bại
+      this.bookingLoading.set(null); // Clear loading state on error
     }
   });
 }

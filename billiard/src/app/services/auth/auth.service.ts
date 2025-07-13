@@ -8,6 +8,7 @@ import { jwtDecode } from 'jwt-decode';
 export class AuthService {
 private TOKEN_KEY = 'jwt_token';
 private loginUrl = 'https://localhost:7176/api/Auth/login';
+private resetPasswordUrl = 'https://localhost:7176/reset-password';
   constructor(private http: HttpClient) { }
 
   login(username: string, password: string): Observable<any> {
@@ -19,6 +20,11 @@ private loginUrl = 'https://localhost:7176/api/Auth/login';
         }
       })
     );
+  }
+
+  resetPassword(username: string): Observable<any> {
+    // Server mong đợi POST với username trong query parameter và empty body
+    return this.http.post<any>(`${this.resetPasswordUrl}?username=${encodeURIComponent(username)}`, '');
   }
 
    setToken(token: string) {

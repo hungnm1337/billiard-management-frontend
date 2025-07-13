@@ -12,9 +12,39 @@ import { AuthService } from '../../../services/auth/auth.service';
 })
 export class LoginComponent {
 
+forgotPassword() {
+  const username = this.loginForm.get('username')?.value;
+
+  if (!username || username.trim() === '') {
+    this.error = 'Vui lòng nhập tên đăng nhập để đặt lại mật khẩu';
+    return;
+  }
+
+  this.isLoading = true;
+  this.error = '';
+
+  this.authService.resetPassword(username).subscribe({
+    next: (response) => {
+      this.isLoading = false;
+      // Show success message (you might want to show this in a different way)
+      alert('Yêu cầu đặt lại mật khẩu đã được gửi. Vui lòng kiểm tra email của bạn.');
+    },
+    error: (err) => {
+      this.isLoading = false;
+      if (err.status === 404) {
+        this.error = 'Không tìm thấy tài khoản với tên đăng nhập này';
+      } else {
+        this.error = 'Có lỗi xảy ra khi gửi yêu cầu đặt lại mật khẩu. Vui lòng thử lại sau.';
+      }
+      console.error('Reset password error:', err);
+    }
+  });
+}
+
   loginForm: FormGroup;
   submitted = false;
   error: string = '';
+  isLoading: boolean = false;
 
   constructor(private router: Router, private fb: FormBuilder,private authService: AuthService) {
     this.loginForm = this.fb.group({
